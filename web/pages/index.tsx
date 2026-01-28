@@ -1,4 +1,4 @@
-"use client";
+f"use client";
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ModernSchedule from "../components/ModernSchedule";
@@ -3635,7 +3635,7 @@ export default function Home() {
                                             updatedBlocks.length
                                         );
 
-                                        setBlocks(updatedBlocks);
+                                        setBlocks(updatedBlocks.filter((b): b is TimeBlock => b !== null));
                                         setTasks(updatedTasks);
 
                                         // Save to localStorage
@@ -4240,7 +4240,7 @@ export default function Home() {
                                         const updatedBlocks = [...blocks, ...newBlocks];
                                         const updatedTasks = [...tasks, ...newTasks];
 
-                                        setBlocks(updatedBlocks);
+                                        setBlocks(updatedBlocks.filter((b): b is TimeBlock => b !== null));
                                         setTasks(updatedTasks);
 
                                         // Save to localStorage
