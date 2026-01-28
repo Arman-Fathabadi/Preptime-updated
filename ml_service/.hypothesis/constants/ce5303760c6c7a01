@@ -1,0 +1,4 @@
+# file: C:\Users\seyed\OneDrive\Desktop\PrepTime\shared\models.py
+# hypothesis_version: 6.148.8
+
+['admin', 'balanced', 'blocked', 'bufferMin', 'contextSwitchPenalty', 'dayEndHour', 'dayStartHour', 'deep', 'deepWorkHours', 'dueAt', 'durationMin', 'fixed', 'freeHours', 'high', 'lockin', 'low', 'maxHeavyPerDay', 'med', 'relax', 'scheduledBlocks', 'scheduledHours', 'slotStepMin', 'study', 'taskId', 'tasksOnTime']

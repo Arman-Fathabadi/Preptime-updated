@@ -1,0 +1,155 @@
+{
+  "accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "confusion_matrix": {
+    "tp": 45,
+    "fp": 0,
+    "fn": 0,
+    "tn": 0
+  },
+  "num_predictions": 45,
+  "example_predictions": [
+    {
+      "task": {
+        "title": "Task 1",
+        "duration": 15,
+        "type": "admin",
+        "priority": 2,
+        "dueAt": "2025-12-30T00:00:00"
+      },
+      "best_slot": {
+        "start": "2025-12-29T09:00:00",
+        "duration": 15
+      },
+      "confidence": 0.9937313505830745
+    },
+    {
+      "task": {
+        "title": "Task 2",
+        "duration": 15,
+        "type": "admin",
+        "priority": 5,
+        "dueAt": "2025-12-30T00:00:00"
+      },
+      "best_slot": {
+        "start": "2025-12-29T16:00:00",
+        "duration": 30
+      },
+      "confidence": 0.9983908396199735
+    },
+    {
+      "task": {
+        "title": "Task 1",
+        "duration": 30,
+        "type": "relax",
+        "priority": 3,
+        "dueAt": "2025-12-30T00:00:00"
+      },
+      "best_slot": {
+        "start": "2025-12-29T12:30:00",
+        "duration": 30
+      },
+      "confidence": 0.9961090282742295
+    },
+    {
+      "task": {
+        "title": "Task 1",
+        "duration": 30,
+        "type": "relax",
+        "priority": 5,
+        "dueAt": null
+      },
+      "best_slot": {
+        "start": "2025-12-28T17:00:00",
+        "duration": 30
+      },
+      "confidence": 0.9632942421195078
+    },
+    {
+      "task": {
+        "title": "Task 1",
+        "duration": 30,
+        "type": "admin",
+        "priority": 2,
+        "dueAt": "2025-12-26T00:00:00"
+      },
+      "best_slot": {
+        "start": "2025-12-25T18:30:00",
+        "duration": 30
+      },
+      "confidence": 0.991661752532958
+    },
+    {
+      "task": {
+        "title": "Task 1",
+        "duration": 30,
+        "type": "relax",
+        "priority": 5,
+        "dueAt": "2025-12-30T00:00:00"
+      },
+      "best_slot": {
+        "start": "2025-12-29T16:00:00",
+        "duration": 30
+      },
+      "confidence": 0.9986169731441306
+    },
+    {
+      "task": {
+        "title": "Task 0",
+        "duration": 15,
+        "type": "admin",
+        "priority": 2,
+        "dueAt": null
+      },
+      "best_slot": {
+        "start": "2025-12-29T17:00:00",
+        "duration": 15
+      },
+      "confidence": 0.9068020816747241
+    },
+    {
+      "task": {
+        "title": "Task 2",
+        "duration": 30,
+        "type": "relax",
+        "priority": 4,
+        "dueAt": "2025-12-29T00:00:00"
+      },
+      "best_slot": {
+        "start": "2025-12-28T17:00:00",
+        "duration": 30
+      },
+      "confidence": 0.9964899847742933
+    },
+    {
+      "task": {
+        "title": "Task 2",
+        "duration": 15,
+        "type": "admin",
+        "priority": 4,
+        "dueAt": null
+      },
+      "best_slot": {
+        "start": "2025-12-29T16:00:00",
+        "duration": 15
+      },
+      "confidence": 0.9511041943190172
+    },
+    {
+      "task": {
+        "title": "Task 1",
+        "duration": 30,
+        "type": "admin",
+        "priority": 3,
+        "dueAt": "2025-12-31T00:00:00"
+      },
+      "best_slot": {
+        "start": "2025-12-30T16:00:00",
+        "duration": 30
+      },
+      "confidence": 0.9962436767225308
+    }
+  ]
+}

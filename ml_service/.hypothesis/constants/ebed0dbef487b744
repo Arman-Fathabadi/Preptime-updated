@@ -1,0 +1,4 @@
+# file: C:\Users\seyed\OneDrive\Desktop\PrepTime\ml_service\scorer.py
+# hypothesis_version: 6.148.8
+
+[0.0, 0.1, 0.2, 0.4, 0.5, 0.7, 1.0, 20.0, 24.0, 3600, '+00:00', 'Z', 'admin', 'balanced', 'deep', 'high', 'lockin', 'low', 'med', 'relax', 'slot_day_of_week', 'slot_duration_min', 'slot_is_afternoon', 'slot_is_evening', 'slot_is_morning', 'slot_start_hour', 'study', 'task_duration_min', 'task_energy_high', 'task_energy_low', 'task_energy_med', 'task_has_deadline', 'task_mode_balanced', 'task_mode_lockin', 'task_mode_relax', 'task_mode_study', 'task_priority', 'task_type_admin', 'task_type_deep', 'task_type_relax', 'task_type_study']
