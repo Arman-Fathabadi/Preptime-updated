@@ -760,14 +760,21 @@ function MiniCalendar({
 function FocusTimerPanel({
     block,
     selectedDate,
-    now,
+
     isDark,
 }: {
     block: TimeBlock | undefined;
     selectedDate: Date;
-    now: Date;
     isDark: boolean;
 }) {
+    // Internal timer state to avoid re-rendering the whole app
+    const [now, setNow] = React.useState(() => new Date());
+
+    React.useEffect(() => {
+        // Update frequently only when this component is mounted (timer is active)
+        const id = setInterval(() => setNow(new Date()), 250);
+        return () => clearInterval(id);
+    }, []);
     const card = `rounded-2xl border shadow-sm p-4 ${isDark ? "border-slate-700/50 bg-slate-800/30" : "border-zinc-200 bg-white"
         }`;
 
@@ -1046,7 +1053,6 @@ function FocusTimerPanel({
 function Sidebar({
     blocks,
     activeId,
-    now,
     selectedDate,
     onSelectDate,
     onSelectBlock,
@@ -1060,7 +1066,6 @@ function Sidebar({
 }: {
     blocks: TimeBlock[];
     activeId?: string;
-    now: Date;
     selectedDate: Date;
     onSelectDate: (d: Date) => void;
     onSelectBlock: (id: string) => void;
@@ -1073,6 +1078,14 @@ function Sidebar({
     onSetManualOrderForDate: (dateISO: string, idsInOrder: string[]) => void;
     isDark: boolean;
 }) {
+    // Internal time state for sorting and header clock
+    // Update every 10 seconds is enough for minute-level display and sorting
+    const [now, setNow] = React.useState(() => new Date());
+
+    React.useEffect(() => {
+        const id = setInterval(() => setNow(new Date()), 10000);
+        return () => clearInterval(id);
+    }, []);
     const [menuFor, setMenuFor] = React.useState<string | null>(null);
     const [menuPos, setMenuPos] = React.useState<{
         top: number;
@@ -1397,6 +1410,15 @@ function Sidebar({
             </div>
 
             <div className="p-4 space-y-3 overflow-y-auto flex-1">
+                {/* Focus Timer Panel - moved to top */}
+                <div className="pb-2">
+                    <FocusTimerPanel
+                        block={active}
+                        selectedDate={selectedDate}
+                        isDark={isDark}
+                    />
+                </div>
+
                 {filtered.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -1638,15 +1660,6 @@ function Sidebar({
                         );
                     })
                 )}
-
-                <div className="pt-2">
-                    <FocusTimerPanel
-                        block={active}
-                        selectedDate={selectedDate}
-                        now={now}
-                        isDark={isDark}
-                    />
-                </div>
             </div>
 
             {editId ? (
@@ -2211,12 +2224,9 @@ export default function Home() {
     const [isDark, setIsDark] = useState(false);
     const [viewType, setViewType] = useState<ViewType>("week");
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [now, setNow] = React.useState(() => new Date());
 
-    React.useEffect(() => {
-        const id = setInterval(() => setNow(new Date()), 250);
-        return () => clearInterval(id);
-    }, []);
+    // Removed 'now' state and interval here to prevent frequent re-renders of the whole page.
+    // Time is now managed locally in Sidebar, FocusTimerPanel, and ModernSchedule.
 
     const [selectedDate, setSelectedDate] = React.useState(() => new Date());
 
@@ -2235,6 +2245,22 @@ export default function Home() {
             localStorage.setItem("preptime-blocks", JSON.stringify(blocks));
         }
     }, [blocks, isLoaded]);
+
+    // Persist activeId
+    React.useEffect(() => {
+        if (!isLoaded) return;
+        if (activeId) {
+            localStorage.setItem("preptime-active-id", activeId);
+        } else {
+            localStorage.removeItem("preptime-active-id");
+        }
+    }, [activeId, isLoaded]);
+
+    // Persist selectedDate
+    React.useEffect(() => {
+        if (!isLoaded) return;
+        localStorage.setItem("preptime-selected-date", selectedDate.toISOString());
+    }, [selectedDate, isLoaded]);
     function selectDateEverywhere(d: Date) {
         const nd = new Date(d);
         nd.setHours(0, 0, 0, 0);
@@ -2263,6 +2289,27 @@ export default function Home() {
 
         if (savedBlocks) setBlocks(JSON.parse(savedBlocks));
         if (savedOrder) setManualOrderByDate(JSON.parse(savedOrder));
+
+        const savedActiveId = localStorage.getItem("preptime-active-id");
+        if (savedActiveId) {
+            // Verify block exists before restoring
+            let parsedBlocks: any[] = [];
+            try {
+                parsedBlocks = savedBlocks ? JSON.parse(savedBlocks) : [];
+            } catch (e) {
+                console.error("Error parsing saved blocks for activeId verification", e);
+            }
+            const exists = parsedBlocks.some((b: any) => b.id === savedActiveId);
+            if (exists) setActiveId(savedActiveId);
+        }
+
+        const savedDate = localStorage.getItem("preptime-selected-date");
+        if (savedDate) {
+            const date = new Date(savedDate);
+            if (!isNaN(date.getTime())) {
+                selectDateEverywhere(date);
+            }
+        }
 
         const savedTheme = localStorage.getItem("preptime-theme") as
             | "system"
@@ -3165,7 +3212,6 @@ export default function Home() {
                 <Sidebar
                     blocks={blocks}
                     activeId={activeId}
-                    now={now}
                     selectedDate={selectedDate}
                     onSelectDate={selectDateEverywhere}
                     onSelectBlock={(id) => setActiveId(id)}
