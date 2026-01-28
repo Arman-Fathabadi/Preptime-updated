@@ -26,6 +26,8 @@ export default async function handler(
   }
 
   try {
+    console.log(`Submitting month generation request to: ${ML_SERVICE_URL}/generate-month`);
+    
     const response = await fetch(`${ML_SERVICE_URL}/generate-month`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -34,6 +36,7 @@ export default async function handler(
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error(`ML service error (${response.status}): ${errorText}`);
       throw new Error(`ML service error: ${response.statusText} - ${errorText}`);
     }
 
@@ -41,6 +44,7 @@ export default async function handler(
     res.status(200).json(data);
   } catch (error) {
     console.error('Generate month API error:', error);
+    console.error('Failed to connect to ML Service at:', ML_SERVICE_URL);
     res.status(503).json({ 
       error: error instanceof Error ? error.message : 'Month generation service unavailable' 
     });
