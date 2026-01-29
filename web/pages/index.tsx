@@ -2747,14 +2747,27 @@ export default function Home() {
         const endTimeDisplay = formatHour(task.endHour);
 
         return (
-            <div
+            <motion.div
                 key={task.id}
-                onClick={(e) => {
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{
+                    scale: 1.05,
+                    height: "auto",
+                    minHeight: "4rem",
+                    zIndex: 50,
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                    filter: "brightness(1.1)",
+                    opacity: 1
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     toggleTaskCompletion(task.id);
                 }}
                 className={`absolute pointer-events-auto ${task.color
-                    } border-l-4 border-opacity-80 rounded-r ${heightInRows < 0.5 ? 'px-1 py-0.5' : 'px-2 py-1'} text-xs font-medium text-white overflow-hidden cursor-pointer transform transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)] hover:scale-[1.03] hover:shadow-2xl hover:brightness-110 hover:opacity-100 hover:!h-auto hover:!min-h-[3.5rem] hover:z-50 z-10 shadow-sm group ${task.completed ? "opacity-50" : ""
+                    } border-l-4 border-opacity-80 rounded-r ${heightInRows < 0.5 ? 'px-1 py-0.5' : 'px-2 py-1'} text-xs font-medium text-white overflow-hidden cursor-pointer z-10 shadow-sm group ${task.completed ? "opacity-50" : ""
                     }`}
                 style={{
                     top: `${(start - startHour) * 3.5}rem`,
@@ -2799,7 +2812,7 @@ export default function Home() {
                         </svg>
                     </button>
                 </div>
-            </div>
+            </motion.div>
         );
     };
 

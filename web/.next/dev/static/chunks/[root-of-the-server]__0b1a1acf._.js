@@ -5462,12 +5462,35 @@ function Home() {
         const heightInRows = duration;
         const startTimeDisplay = formatHour(task.startHour);
         const endTimeDisplay = formatHour(task.endHour);
-        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["motion"].div, {
+            layout: true,
+            initial: {
+                opacity: 0,
+                scale: 0.9
+            },
+            animate: {
+                opacity: 1,
+                scale: 1
+            },
+            whileHover: {
+                scale: 1.05,
+                height: "auto",
+                minHeight: "4rem",
+                zIndex: 50,
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                filter: "brightness(1.1)",
+                opacity: 1
+            },
+            transition: {
+                type: "spring",
+                stiffness: 400,
+                damping: 25
+            },
             onClick: (e)=>{
                 e.stopPropagation();
                 toggleTaskCompletion(task.id);
             },
-            className: `absolute pointer-events-auto ${task.color} border-l-4 border-opacity-80 rounded-r ${heightInRows < 0.5 ? 'px-1 py-0.5' : 'px-2 py-1'} text-xs font-medium text-white overflow-hidden cursor-pointer transform transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)] hover:scale-[1.03] hover:shadow-2xl hover:brightness-110 hover:opacity-100 hover:!h-auto hover:!min-h-[3.5rem] hover:z-50 z-10 shadow-sm group ${task.completed ? "opacity-50" : ""}`,
+            className: `absolute pointer-events-auto ${task.color} border-l-4 border-opacity-80 rounded-r ${heightInRows < 0.5 ? 'px-1 py-0.5' : 'px-2 py-1'} text-xs font-medium text-white overflow-hidden cursor-pointer z-10 shadow-sm group ${task.completed ? "opacity-50" : ""}`,
             style: {
                 top: `${(start - startHour) * 3.5}rem`,
                 height: `${heightInRows * 3.5}rem`,
@@ -5491,14 +5514,14 @@ function Home() {
                                         children: "✓"
                                     }, void 0, false, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 2776,
+                                        lineNumber: 2789,
                                         columnNumber: 48
                                     }, this),
                                     task.title
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 2772,
+                                lineNumber: 2785,
                                 columnNumber: 25
                             }, this),
                             task.label && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5506,7 +5529,7 @@ function Home() {
                                 children: task.label
                             }, void 0, false, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 2780,
+                                lineNumber: 2793,
                                 columnNumber: 29
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5518,13 +5541,13 @@ function Home() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 2784,
+                                lineNumber: 2797,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 2771,
+                        lineNumber: 2784,
                         columnNumber: 21
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -5541,23 +5564,23 @@ function Home() {
                                 clipRule: "evenodd"
                             }, void 0, false, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 2794,
+                                lineNumber: 2807,
                                 columnNumber: 29
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                            lineNumber: 2793,
+                            lineNumber: 2806,
                             columnNumber: 25
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 2788,
+                        lineNumber: 2801,
                         columnNumber: 21
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 2770,
+                lineNumber: 2783,
                 columnNumber: 17
             }, this)
         }, task.id, false, {
@@ -5581,7 +5604,7 @@ function Home() {
                                 className: `p-3 text-xs font-semibold ${isDark ? "text-slate-400" : "text-slate-500"}`
                             }, void 0, false, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 2821,
+                                lineNumber: 2834,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5592,7 +5615,7 @@ function Home() {
                                         children: daysFull[currentDate.getDay()]
                                     }, void 0, false, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 2829,
+                                        lineNumber: 2842,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5600,19 +5623,19 @@ function Home() {
                                         children: currentDate.getDate()
                                     }, void 0, false, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 2832,
+                                        lineNumber: 2845,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 2825,
+                                lineNumber: 2838,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 2815,
+                        lineNumber: 2828,
                         columnNumber: 21
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5629,7 +5652,7 @@ function Home() {
                                             children: formatHour(hour)
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 2847,
+                                            lineNumber: 2860,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5643,23 +5666,23 @@ function Home() {
                                                     children: "+"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 2867,
+                                                    lineNumber: 2880,
                                                     columnNumber: 45
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 2863,
+                                                lineNumber: 2876,
                                                 columnNumber: 41
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 2856,
+                                            lineNumber: 2869,
                                             columnNumber: 37
                                         }, this)
                                     ]
                                 }, `day-row-${hour}`, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 2846,
+                                    lineNumber: 2859,
                                     columnNumber: 33
                                 }, this);
                             }),
@@ -5668,24 +5691,24 @@ function Home() {
                                 children: dayTasks.map((task)=>renderTaskBlock(task, currentDate))
                             }, void 0, false, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 2881,
+                                lineNumber: 2894,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 2841,
+                        lineNumber: 2854,
                         columnNumber: 21
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 2814,
+                lineNumber: 2827,
                 columnNumber: 17
             }, this)
         }, void 0, false, {
             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-            lineNumber: 2813,
+            lineNumber: 2826,
             columnNumber: 13
         }, this);
     };
@@ -5705,7 +5728,7 @@ function Home() {
                                 className: "p-4"
                             }, void 0, false, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 2905,
+                                lineNumber: 2918,
                                 columnNumber: 25
                             }, this),
                             weekDates.map((date, i)=>{
@@ -5727,7 +5750,7 @@ function Home() {
                                             children: days[i]
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 2924,
+                                            lineNumber: 2937,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5735,20 +5758,20 @@ function Home() {
                                             children: date.getDate()
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 2935,
+                                            lineNumber: 2948,
                                             columnNumber: 37
                                         }, this)
                                     ]
                                 }, i, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 2912,
+                                    lineNumber: 2925,
                                     columnNumber: 33
                                 }, this);
                             })
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 2899,
+                        lineNumber: 2912,
                         columnNumber: 21
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5768,12 +5791,12 @@ function Home() {
                                                 children: formatHour(hour)
                                             }, void 0, false, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 2966,
+                                                lineNumber: 2979,
                                                 columnNumber: 41
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 2960,
+                                            lineNumber: 2973,
                                             columnNumber: 37
                                         }, this),
                                         weekDates.map((date, col)=>{
@@ -5801,29 +5824,29 @@ function Home() {
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 3023,
+                                                            lineNumber: 3036,
                                                             columnNumber: 61
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 3017,
+                                                        lineNumber: 3030,
                                                         columnNumber: 57
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 3011,
+                                                    lineNumber: 3024,
                                                     columnNumber: 53
                                                 }, this)
                                             }, `${col}-${hour}`, false, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 2989,
+                                                lineNumber: 3002,
                                                 columnNumber: 45
                                             }, this);
                                         })
                                     ]
                                 }, `week-row-${hour}`, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 2959,
+                                    lineNumber: 2972,
                                     columnNumber: 33
                                 }, this);
                             }),
@@ -5836,30 +5859,30 @@ function Home() {
                                         children: dayTasks.map((task)=>renderTaskBlock(task, date))
                                     }, `tasks-${col}`, false, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 3041,
+                                        lineNumber: 3054,
                                         columnNumber: 37
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 3034,
+                                lineNumber: 3047,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 2953,
+                        lineNumber: 2966,
                         columnNumber: 21
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 2897,
+                lineNumber: 2910,
                 columnNumber: 17
             }, this)
         }, void 0, false, {
             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-            lineNumber: 2896,
+            lineNumber: 2909,
             columnNumber: 13
         }, this);
     };
@@ -5886,7 +5909,7 @@ function Home() {
                             children: day
                         }, day, false, {
                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                            lineNumber: 3075,
+                            lineNumber: 3088,
                             columnNumber: 25
                         }, this)),
                     calendarDays.map((day, idx)=>{
@@ -5908,30 +5931,30 @@ function Home() {
                                             className: `w-1 h-1 rounded-full ${i < completedCount ? isToday ? "bg-green-200" : "bg-green-400" : isToday ? "bg-white" : "bg-indigo-400"}`
                                         }, i, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3117,
+                                            lineNumber: 3130,
                                             columnNumber: 49
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 3114,
+                                    lineNumber: 3127,
                                     columnNumber: 37
                                 }, this)
                             ]
                         }, idx, true, {
                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                            lineNumber: 3099,
+                            lineNumber: 3112,
                             columnNumber: 29
                         }, this);
                     })
                 ]
             }, void 0, true, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 3073,
+                lineNumber: 3086,
                 columnNumber: 17
             }, this)
         }, void 0, false, {
             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-            lineNumber: 3072,
+            lineNumber: 3085,
             columnNumber: 13
         }, this);
     };
@@ -5978,7 +6001,7 @@ function Home() {
                                 children: months[monthIdx]
                             }, void 0, false, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 3176,
+                                lineNumber: 3189,
                                 columnNumber: 33
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5997,7 +6020,7 @@ function Home() {
                                             children: d
                                         }, d, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3184,
+                                            lineNumber: 3197,
                                             columnNumber: 41
                                         }, this)),
                                     cells.map((day, idx)=>{
@@ -6010,31 +6033,31 @@ function Home() {
                                             children: day ?? ""
                                         }, idx, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3198,
+                                            lineNumber: 3211,
                                             columnNumber: 45
                                         }, this);
                                     })
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 3182,
+                                lineNumber: 3195,
                                 columnNumber: 33
                             }, this)
                         ]
                     }, monthIdx, true, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 3171,
+                        lineNumber: 3184,
                         columnNumber: 29
                     }, this);
                 })
             }, void 0, false, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 3152,
+                lineNumber: 3165,
                 columnNumber: 17
             }, this)
         }, void 0, false, {
             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-            lineNumber: 3151,
+            lineNumber: 3164,
             columnNumber: 13
         }, this);
     };
@@ -6059,7 +6082,7 @@ function Home() {
                                 children: month
                             }, void 0, false, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 3244,
+                                lineNumber: 3257,
                                 columnNumber: 33
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6078,7 +6101,7 @@ function Home() {
                                             children: d
                                         }, d, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3252,
+                                            lineNumber: 3265,
                                             columnNumber: 41
                                         }, this)),
                                     cells.map((day, i)=>{
@@ -6091,31 +6114,31 @@ function Home() {
                                             children: day ?? ""
                                         }, i, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3266,
+                                            lineNumber: 3279,
                                             columnNumber: 45
                                         }, this);
                                     })
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 3250,
+                                lineNumber: 3263,
                                 columnNumber: 33
                             }, this)
                         ]
                     }, month, true, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 3239,
+                        lineNumber: 3252,
                         columnNumber: 29
                     }, this);
                 })
             }, void 0, false, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 3229,
+                lineNumber: 3242,
                 columnNumber: 17
             }, this)
         }, void 0, false, {
             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-            lineNumber: 3228,
+            lineNumber: 3241,
             columnNumber: 13
         }, this);
     };
@@ -6139,12 +6162,12 @@ function Home() {
                 className: "animate-spin h-8 w-8 text-white"
             }, void 0, false, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 3310,
+                lineNumber: 3323,
                 columnNumber: 17
             }, this)
         }, void 0, false, {
             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-            lineNumber: 3309,
+            lineNumber: 3322,
             columnNumber: 13
         }, this);
     }
@@ -6173,7 +6196,7 @@ function Home() {
                         weatherUnit: preferences.weatherUnit
                     }, void 0, false, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 3324,
+                        lineNumber: 3337,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6193,12 +6216,12 @@ function Home() {
                                                         className: `w-6 h-6 ${isDark ? "text-indigo-400" : "text-indigo-600"}`
                                                     }, void 0, false, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 3361,
+                                                        lineNumber: 3374,
                                                         columnNumber: 37
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 3357,
+                                                    lineNumber: 3370,
                                                     columnNumber: 33
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6208,7 +6231,7 @@ function Home() {
                                                             children: "PrepTime"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 3367,
+                                                            lineNumber: 3380,
                                                             columnNumber: 37
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6216,19 +6239,19 @@ function Home() {
                                                             children: "AI-Powered Smart Scheduler"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 3373,
+                                                            lineNumber: 3386,
                                                             columnNumber: 37
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 3366,
+                                                    lineNumber: 3379,
                                                     columnNumber: 33
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3356,
+                                            lineNumber: 3369,
                                             columnNumber: 29
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -6248,7 +6271,7 @@ function Home() {
                                                         d: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 3395,
+                                                        lineNumber: 3408,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -6258,24 +6281,24 @@ function Home() {
                                                         d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 3401,
+                                                        lineNumber: 3414,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 3389,
+                                                lineNumber: 3402,
                                                 columnNumber: 33
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3381,
+                                            lineNumber: 3394,
                                             columnNumber: 29
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 3350,
+                                    lineNumber: 3363,
                                     columnNumber: 25
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6291,17 +6314,17 @@ function Home() {
                                                         children: view.label
                                                     }, view.value, false, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 3420,
+                                                        lineNumber: 3433,
                                                         columnNumber: 41
                                                     }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 3418,
+                                                lineNumber: 3431,
                                                 columnNumber: 33
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3417,
+                                            lineNumber: 3430,
                                             columnNumber: 29
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6323,20 +6346,20 @@ function Home() {
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 3447,
+                                                            lineNumber: 3460,
                                                             columnNumber: 37
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             children: "Prev"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 3448,
+                                                            lineNumber: 3461,
                                                             columnNumber: 37
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 3437,
+                                                    lineNumber: 3450,
                                                     columnNumber: 33
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6344,7 +6367,7 @@ function Home() {
                                                     children: getViewTitle()
                                                 }, void 0, false, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 3450,
+                                                    lineNumber: 3463,
                                                     columnNumber: 33
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["motion"].button, {
@@ -6363,26 +6386,26 @@ function Home() {
                                                             children: "Next"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 3468,
+                                                            lineNumber: 3481,
                                                             columnNumber: 37
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ChevronRightIcon, {
                                                             className: "w-4 h-4"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 3469,
+                                                            lineNumber: 3482,
                                                             columnNumber: 37
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 3458,
+                                                    lineNumber: 3471,
                                                     columnNumber: 33
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3436,
+                                            lineNumber: 3449,
                                             columnNumber: 29
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6596,7 +6619,7 @@ function Home() {
                                                     }
                                                 }, void 0, false, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 3475,
+                                                    lineNumber: 3488,
                                                     columnNumber: 33
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["motion"].button, {
@@ -7191,7 +7214,7 @@ function Home() {
                                                     children: "🎯 Add Demo Week"
                                                 }, void 0, false, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 3815,
+                                                    lineNumber: 3828,
                                                     columnNumber: 33
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["motion"].button, {
@@ -7222,26 +7245,26 @@ function Home() {
                                                             className: "w-5 h-5"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 4448,
+                                                            lineNumber: 4461,
                                                             columnNumber: 37
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                             children: "Add Task"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 4449,
+                                                            lineNumber: 4462,
                                                             columnNumber: 37
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 4425,
+                                                    lineNumber: 4438,
                                                     columnNumber: 33
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 3474,
+                                            lineNumber: 3487,
                                             columnNumber: 29
                                         }, this),
                                         getUniqueLabels().length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7253,25 +7276,25 @@ function Home() {
                                                             className: "w-2 h-2 rounded-full bg-white/80"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 4460,
+                                                            lineNumber: 4473,
                                                             columnNumber: 45
                                                         }, this),
                                                         label
                                                     ]
                                                 }, label, true, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 4456,
+                                                    lineNumber: 4469,
                                                     columnNumber: 41
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4454,
+                                            lineNumber: 4467,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 3411,
+                                    lineNumber: 3424,
                                     columnNumber: 25
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7291,7 +7314,7 @@ function Home() {
                                             formatDateKey: formatDateKey
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4470,
+                                            lineNumber: 4483,
                                             columnNumber: 33
                                         }, this),
                                         viewType === "week" && renderWeekView(),
@@ -7301,7 +7324,7 @@ function Home() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4468,
+                                    lineNumber: 4481,
                                     columnNumber: 25
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7313,7 +7336,7 @@ function Home() {
                                                 children: viewType === "week" && selectedDateIndex !== null ? `Selected: ${days[selectedDateIndex]}, ${formatDate(addDays(currentMonday, selectedDateIndex))}` : `Viewing: ${viewType.charAt(0).toUpperCase() + viewType.slice(1)}`
                                             }, void 0, false, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 4497,
+                                                lineNumber: 4510,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7330,7 +7353,7 @@ function Home() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                                lineNumber: 4507,
+                                                                lineNumber: 4520,
                                                                 columnNumber: 41
                                                             }, this),
                                                             " ",
@@ -7338,7 +7361,7 @@ function Home() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 4506,
+                                                        lineNumber: 4519,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -7352,7 +7375,7 @@ function Home() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                                lineNumber: 4513,
+                                                                lineNumber: 4526,
                                                                 columnNumber: 41
                                                             }, this),
                                                             " ",
@@ -7360,7 +7383,7 @@ function Home() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 4512,
+                                                        lineNumber: 4525,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -7371,48 +7394,48 @@ function Home() {
                                                                 children: stats.total
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                                lineNumber: 4519,
+                                                                lineNumber: 4532,
                                                                 columnNumber: 41
                                                             }, this),
                                                             " Total"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 4518,
+                                                        lineNumber: 4531,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 4505,
+                                                lineNumber: 4518,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 4496,
+                                        lineNumber: 4509,
                                         columnNumber: 29
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4490,
+                                    lineNumber: 4503,
                                     columnNumber: 25
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                            lineNumber: 3344,
+                            lineNumber: 3357,
                             columnNumber: 21
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 3343,
+                        lineNumber: 3356,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 3322,
+                lineNumber: 3335,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -7441,7 +7464,7 @@ function Home() {
                                         children: "Settings"
                                     }, void 0, false, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 4540,
+                                        lineNumber: 4553,
                                         columnNumber: 33
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -7459,23 +7482,23 @@ function Home() {
                                                 d: "M6 18L18 6M6 6l12 12"
                                             }, void 0, false, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 4551,
+                                                lineNumber: 4564,
                                                 columnNumber: 41
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4550,
+                                            lineNumber: 4563,
                                             columnNumber: 37
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 4543,
+                                        lineNumber: 4556,
                                         columnNumber: 33
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 4539,
+                                lineNumber: 4552,
                                 columnNumber: 29
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7487,7 +7510,7 @@ function Home() {
                                         isDark: isDark
                                     }, void 0, false, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 4558,
+                                        lineNumber: 4571,
                                         columnNumber: 33
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7497,7 +7520,7 @@ function Home() {
                                                 children: "Theme"
                                             }, void 0, false, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 4565,
+                                                lineNumber: 4578,
                                                 columnNumber: 37
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7527,7 +7550,7 @@ function Home() {
                                                                 children: option.icon
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                                lineNumber: 4587,
+                                                                lineNumber: 4600,
                                                                 columnNumber: 49
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -7535,7 +7558,7 @@ function Home() {
                                                                 children: option.label
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                                lineNumber: 4588,
+                                                                lineNumber: 4601,
                                                                 columnNumber: 49
                                                             }, this),
                                                             theme === option.value && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
@@ -7548,29 +7571,29 @@ function Home() {
                                                                     clipRule: "evenodd"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                                    lineNumber: 4604,
+                                                                    lineNumber: 4617,
                                                                     columnNumber: 57
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                                lineNumber: 4599,
+                                                                lineNumber: 4612,
                                                                 columnNumber: 53
                                                             }, this)
                                                         ]
                                                     }, option.value, true, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 4577,
+                                                        lineNumber: 4590,
                                                         columnNumber: 45
                                                     }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 4571,
+                                                lineNumber: 4584,
                                                 columnNumber: 37
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 4564,
+                                        lineNumber: 4577,
                                         columnNumber: 33
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7581,7 +7604,7 @@ function Home() {
                                                 children: "Data Management"
                                             }, void 0, false, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 4617,
+                                                lineNumber: 4630,
                                                 columnNumber: 37
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -7602,7 +7625,7 @@ function Home() {
                                                         children: "🗑️"
                                                     }, void 0, false, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 4643,
+                                                        lineNumber: 4656,
                                                         columnNumber: 41
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7613,7 +7636,7 @@ function Home() {
                                                                 children: "Clear All Tasks"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                                lineNumber: 4645,
+                                                                lineNumber: 4658,
                                                                 columnNumber: 45
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7621,47 +7644,47 @@ function Home() {
                                                                 children: "Resets local data"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                                lineNumber: 4651,
+                                                                lineNumber: 4664,
                                                                 columnNumber: 45
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                        lineNumber: 4644,
+                                                        lineNumber: 4657,
                                                         columnNumber: 41
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                lineNumber: 4623,
+                                                lineNumber: 4636,
                                                 columnNumber: 37
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                        lineNumber: 4616,
+                                        lineNumber: 4629,
                                         columnNumber: 33
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                lineNumber: 4556,
+                                lineNumber: 4569,
                                 columnNumber: 29
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                        lineNumber: 4532,
+                        lineNumber: 4545,
                         columnNumber: 25
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                    lineNumber: 4531,
+                    lineNumber: 4544,
                     columnNumber: 21
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 4529,
+                lineNumber: 4542,
                 columnNumber: 13
             }, this),
             showModal && selectedSlot && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7679,7 +7702,7 @@ function Home() {
                                     children: "Add Task"
                                 }, void 0, false, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4681,
+                                    lineNumber: 4694,
                                     columnNumber: 33
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -7687,13 +7710,13 @@ function Home() {
                                     children: viewType === "day" ? formatFullDate(currentDate) : `${days[selectedSlot.day]}, ${formatDate(selectedSlot.date)}`
                                 }, void 0, false, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4682,
+                                    lineNumber: 4695,
                                     columnNumber: 33
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                            lineNumber: 4680,
+                            lineNumber: 4693,
                             columnNumber: 29
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7706,7 +7729,7 @@ function Home() {
                                             children: "Task Title"
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4693,
+                                            lineNumber: 4706,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -7717,13 +7740,13 @@ function Home() {
                                             className: `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "border-slate-300"}`
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4699,
+                                            lineNumber: 4712,
                                             columnNumber: 37
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4692,
+                                    lineNumber: 4705,
                                     columnNumber: 33
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7733,7 +7756,7 @@ function Home() {
                                             children: "Start Time"
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4712,
+                                            lineNumber: 4725,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7753,7 +7776,7 @@ function Home() {
                                                     className: `flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark ? "bg-slate-700 border-slate-600 text-white" : "border-slate-300"}`
                                                 }, void 0, false, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 4719,
+                                                    lineNumber: 4732,
                                                     columnNumber: 41
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -7766,7 +7789,7 @@ function Home() {
                                                             children: "AM"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 4743,
+                                                            lineNumber: 4756,
                                                             columnNumber: 45
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -7774,25 +7797,25 @@ function Home() {
                                                             children: "PM"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 4744,
+                                                            lineNumber: 4757,
                                                             columnNumber: 45
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 4735,
+                                                    lineNumber: 4748,
                                                     columnNumber: 41
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4718,
+                                            lineNumber: 4731,
                                             columnNumber: 37
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4711,
+                                    lineNumber: 4724,
                                     columnNumber: 33
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7802,7 +7825,7 @@ function Home() {
                                             children: "End Time"
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4750,
+                                            lineNumber: 4763,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7822,7 +7845,7 @@ function Home() {
                                                     className: `flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark ? "bg-slate-700 border-slate-600 text-white" : "border-slate-300"}`
                                                 }, void 0, false, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 4757,
+                                                    lineNumber: 4770,
                                                     columnNumber: 41
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -7835,7 +7858,7 @@ function Home() {
                                                             children: "AM"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 4781,
+                                                            lineNumber: 4794,
                                                             columnNumber: 45
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -7843,19 +7866,19 @@ function Home() {
                                                             children: "PM"
                                                         }, void 0, false, {
                                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                            lineNumber: 4782,
+                                                            lineNumber: 4795,
                                                             columnNumber: 45
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 4773,
+                                                    lineNumber: 4786,
                                                     columnNumber: 41
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4756,
+                                            lineNumber: 4769,
                                             columnNumber: 37
                                         }, this),
                                         !isValidTime() && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -7863,13 +7886,13 @@ function Home() {
                                             children: "End time must be after start time"
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4786,
+                                            lineNumber: 4799,
                                             columnNumber: 41
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4749,
+                                    lineNumber: 4762,
                                     columnNumber: 33
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7879,7 +7902,7 @@ function Home() {
                                             children: "Color"
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4793,
+                                            lineNumber: 4806,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7891,12 +7914,12 @@ function Home() {
                                                     title: color.name
                                                 }, color.value, false, {
                                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                                    lineNumber: 4801,
+                                                    lineNumber: 4814,
                                                     columnNumber: 45
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4799,
+                                            lineNumber: 4812,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -7907,13 +7930,13 @@ function Home() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4814,
+                                            lineNumber: 4827,
                                             columnNumber: 37
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4792,
+                                    lineNumber: 4805,
                                     columnNumber: 33
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7923,7 +7946,7 @@ function Home() {
                                             children: "Label/Tag Name"
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4823,
+                                            lineNumber: 4836,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -7934,7 +7957,7 @@ function Home() {
                                             className: `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "border-slate-300"}`
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4829,
+                                            lineNumber: 4842,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -7942,13 +7965,13 @@ function Home() {
                                             children: "Assign a category or subject name to this task"
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4839,
+                                            lineNumber: 4852,
                                             columnNumber: 37
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4822,
+                                    lineNumber: 4835,
                                     columnNumber: 33
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7958,7 +7981,7 @@ function Home() {
                                             children: "Description (optional)"
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4848,
+                                            lineNumber: 4861,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -7969,19 +7992,19 @@ function Home() {
                                             className: `w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none ${isDark ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400" : "border-slate-300"}`
                                         }, void 0, false, {
                                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                            lineNumber: 4854,
+                                            lineNumber: 4867,
                                             columnNumber: 37
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4847,
+                                    lineNumber: 4860,
                                     columnNumber: 33
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                            lineNumber: 4691,
+                            lineNumber: 4704,
                             columnNumber: 29
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7993,7 +8016,7 @@ function Home() {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4873,
+                                    lineNumber: 4886,
                                     columnNumber: 33
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -8003,30 +8026,30 @@ function Home() {
                                     children: "Save Task"
                                 }, void 0, false, {
                                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                                    lineNumber: 4882,
+                                    lineNumber: 4895,
                                     columnNumber: 33
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                            lineNumber: 4867,
+                            lineNumber: 4880,
                             columnNumber: 29
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                    lineNumber: 4675,
+                    lineNumber: 4688,
                     columnNumber: 25
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-                lineNumber: 4671,
+                lineNumber: 4684,
                 columnNumber: 21
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/index.tsx",
-        lineNumber: 3316,
+        lineNumber: 3329,
         columnNumber: 9
     }, this);
 }
