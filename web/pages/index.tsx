@@ -773,13 +773,16 @@ function FocusTimerPanel({
     isDark: boolean;
 }) {
     // Internal timer state to avoid re-rendering the whole app
-    const [now, setNow] = React.useState(() => new Date());
+    const [now, setNow] = React.useState<Date | null>(null);
 
     React.useEffect(() => {
+        setNow(new Date());
         // Update frequently only when this component is mounted (timer is active)
         const id = setInterval(() => setNow(new Date()), 250);
         return () => clearInterval(id);
     }, []);
+
+    if (!now) return null;
     const card = `rounded-2xl border shadow-sm p-4 ${isDark ? "border-slate-700/50 bg-slate-800/30" : "border-zinc-200 bg-white"
         }`;
 

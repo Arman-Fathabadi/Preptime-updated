@@ -176,7 +176,7 @@ const ModernSchedule: React.FC<ModernScheduleProps> = ({
                                 className="group"
                             >
                                 <div
-                                    className={`rounded-2xl border-2 backdrop-blur-sm ${getCategoryStyle(
+                                    className={`rounded-2xl border-2 transition-all ${getCategoryStyle(
                                         category,
                                         isHovered,
                                         isCurrent
@@ -300,11 +300,11 @@ const ModernSchedule: React.FC<ModernScheduleProps> = ({
                                                                                                             initial={{ scale: 0, opacity: 0 }}
                                                                                                             animate={{ scale: 1, opacity: 1, rotate: [0, -20, 0] }}
                                                                                                             exit={{ scale: 0, opacity: 0 }}
-                                                                            transition={{ 
-                                                                                scale: { type: "spring", stiffness: 500, damping: 30 },
-                                                                                opacity: { duration: 0.2 },
-                                                                                rotate: { duration: 0.5, ease: "easeInOut", times: [0, 0.2, 1] } 
-                                                                            }}
+                                                                                                            transition={{
+                                                                                                                scale: { type: "spring", stiffness: 500, damping: 30 },
+                                                                                                                opacity: { duration: 0.2 },
+                                                                                                                rotate: { duration: 0.5, ease: "easeInOut", times: [0, 0.2, 1] }
+                                                                                                            }}
                                                                                                             className="text-sm bg-white/20 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0"
                                                                                                         >
                                                                                                             ✓
