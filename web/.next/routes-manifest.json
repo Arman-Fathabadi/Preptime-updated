@@ -35,6 +35,12 @@
       "namedRegex": "^/api/generate\\-month(?:/)?$"
     },
     {
+      "page": "/api/health",
+      "regex": "^/api/health(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/health(?:/)?$"
+    },
+    {
       "page": "/api/schedule",
       "regex": "^/api/schedule(?:/)?$",
       "routeKeys": {},

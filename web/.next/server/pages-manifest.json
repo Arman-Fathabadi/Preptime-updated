@@ -4,6 +4,7 @@
   "/_document": "pages/_document.js",
   "/_error": "pages/_error.js",
   "/api/generate-month": "pages/api/generate-month.js",
+  "/api/health": "pages/api/health.js",
   "/api/schedule": "pages/api/schedule.js",
   "/login": "pages/login.html",
   "/404": "pages/404.html"

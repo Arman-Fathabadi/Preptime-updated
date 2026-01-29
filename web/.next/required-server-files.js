@@ -140,8 +140,8 @@ self.__SERVER_FILES_MANIFEST={
       "isExperimentalCompile": false
     }
   },
-  "appDir": "/Users/armanfathabadi/Downloads/private-project/Preptime-private/web",
-  "relativeAppDir": "Downloads/private-project/Preptime-private/web",
+  "appDir": "/vercel/sandbox/primary/web",
+  "relativeAppDir": "",
   "files": [
     ".next/routes-manifest.json",
     ".next/server/pages-manifest.json",

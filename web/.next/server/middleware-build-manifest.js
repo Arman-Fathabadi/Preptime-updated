@@ -1,30 +1,36 @@
 globalThis.__BUILD_MANIFEST = {
   "pages": {
     "/": [
-      "static/chunks/b308131460848b33.js",
-      "static/chunks/80c310ada4f5631a.js",
-      "static/chunks/63330cfbbc87dd70.js",
-      "static/chunks/a8cf9d83ab8dd247.js",
-      "static/chunks/turbopack-0dd09b5165880b1e.js"
+      "static/chunks/ac9e3aac4ab48919.js",
+      "static/chunks/f792c1992768a107.js",
+      "static/chunks/f1989aad5290a6aa.js",
+      "static/chunks/16fc48f2c496f984.js",
+      "static/chunks/af1ca51c5acea080.js",
+      "static/chunks/cf7c75daec783f25.js",
+      "static/chunks/turbopack-aa54276b0e8c6b69.js"
     ],
     "/_app": [
-      "static/chunks/f12993444a09c07b.js",
-      "static/chunks/a8cf9d83ab8dd247.js",
-      "static/chunks/80c310ada4f5631a.js",
-      "static/chunks/7969226faeb2e014.css",
-      "static/chunks/turbopack-f35eafcf996a0cd2.js"
+      "static/chunks/46d2bc272493f171.js",
+      "static/chunks/f1989aad5290a6aa.js",
+      "static/chunks/cf7c75daec783f25.js",
+      "static/chunks/16fc48f2c496f984.js",
+      "static/chunks/f792c1992768a107.js",
+      "static/chunks/891c425a1d7b42bb.css",
+      "static/chunks/turbopack-0a6e74c8bd442a32.js"
     ],
     "/_error": [
-      "static/chunks/fe9f74bac31459da.js",
-      "static/chunks/a8cf9d83ab8dd247.js",
-      "static/chunks/80c310ada4f5631a.js",
-      "static/chunks/turbopack-15437492d5a10c64.js"
+      "static/chunks/71442c502d5e90a7.js",
+      "static/chunks/f1989aad5290a6aa.js",
+      "static/chunks/cf7c75daec783f25.js",
+      "static/chunks/16fc48f2c496f984.js",
+      "static/chunks/turbopack-a119ffea1b9d7f77.js"
     ],
     "/login": [
-      "static/chunks/4aadf74534d9d745.js",
-      "static/chunks/a8cf9d83ab8dd247.js",
-      "static/chunks/80c310ada4f5631a.js",
-      "static/chunks/turbopack-ae56cd6b686994bc.js"
+      "static/chunks/796c8a9aabae38cb.js",
+      "static/chunks/f1989aad5290a6aa.js",
+      "static/chunks/16fc48f2c496f984.js",
+      "static/chunks/cf7c75daec783f25.js",
+      "static/chunks/turbopack-b77c3291b91f932d.js"
     ]
   },
   "devFiles": [],

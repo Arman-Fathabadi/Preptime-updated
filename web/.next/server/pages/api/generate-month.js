@@ -1,5 +1,5 @@
 var R=require("../../chunks/[turbopack]_runtime.js")("server/pages/api/generate-month.js")
-R.c("server/chunks/[root-of-the-server]__0bb8e407._.js")
-R.c("server/chunks/[root-of-the-server]__97cb188b._.js")
-R.m(11334)
-module.exports=R.m(11334).exports
+R.c("server/chunks/[root-of-the-server]__a3ce4ac3._.js")
+R.c("server/chunks/[root-of-the-server]__ec476382._.js")
+R.m(17240)
+module.exports=R.m(17240).exports
