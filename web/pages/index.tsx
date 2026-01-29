@@ -2241,8 +2241,17 @@ export default function Home() {
             router.push("/login");
         } else {
             setIsCheckingAuth(false);
-            // Wake up ML backend silently
-            fetch('/api/health').catch(err => console.log('Background wake-up failed', err));
+
+            // Initial Wake-up
+            fetch('/api/health').catch(err => console.log('Wake-up failed', err));
+
+            // Keep-Alive Heartbeat: Ping every 4 minutes (240s) to be safe (Hugging Face sleeps at 15m)
+            const heartbeat = setInterval(() => {
+                console.log('Sending Keep-Alive heartbeat...');
+                fetch('/api/health').catch(err => console.log('Heartbeat failed', err));
+            }, 240000);
+
+            return () => clearInterval(heartbeat);
         }
     }, []);
 
