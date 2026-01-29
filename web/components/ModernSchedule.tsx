@@ -84,53 +84,54 @@ const ModernSchedule: React.FC<ModernScheduleProps> = ({
     };
 
     const getCategoryStyle = (category: string, isHovered: boolean, isCurrent: boolean) => {
-        const baseClasses = "relative overflow-hidden transition-all duration-300";
+        // PERF: Removed transition-all to prevent framer-motion conflicts
+        const baseClasses = "relative overflow-hidden transition-colors duration-200";
 
         if (isCurrent) {
             return `${baseClasses} ${isDark
-                ? 'bg-gradient-to-r from-indigo-600/30 to-purple-600/30 border-indigo-500/50 shadow-lg shadow-indigo-500/20'
-                : 'bg-gradient-to-r from-indigo-100 to-purple-100 border-indigo-400 shadow-lg shadow-indigo-200/50'
+                ? 'bg-indigo-600/30 border-indigo-500/50 shadow-lg'
+                : 'bg-indigo-100 border-indigo-400 shadow-lg'
                 }`;
         }
 
         if (isHovered) {
             return `${baseClasses} ${isDark
-                ? 'bg-slate-700/50 border-indigo-500/40 shadow-md'
-                : 'bg-white border-indigo-300 shadow-md'
+                ? 'bg-slate-700/80 border-indigo-500/40'
+                : 'bg-white border-indigo-300 shadow-sm'
                 }`;
         }
 
         switch (category) {
             case 'morning':
                 return `${baseClasses} ${isDark
-                    ? 'bg-amber-950/20 border-amber-800/20 hover:border-amber-600/40'
-                    : 'bg-amber-50/30 border-amber-200/30 hover:border-amber-300'
+                    ? 'bg-amber-950/20 border-amber-800/20'
+                    : 'bg-amber-50/50 border-amber-200/50'
                     }`;
             case 'work-morning':
             case 'work-afternoon':
                 return `${baseClasses} ${isDark
-                    ? 'bg-indigo-950/30 border-indigo-800/30 hover:border-indigo-600/50'
-                    : 'bg-indigo-50/40 border-indigo-200/40 hover:border-indigo-400'
+                    ? 'bg-indigo-950/20 border-indigo-800/20'
+                    : 'bg-indigo-50/50 border-indigo-200/50'
                     }`;
             case 'lunch':
                 return `${baseClasses} ${isDark
-                    ? 'bg-emerald-950/20 border-emerald-800/20 hover:border-emerald-600/40'
-                    : 'bg-emerald-50/30 border-emerald-200/30 hover:border-emerald-300'
+                    ? 'bg-emerald-950/20 border-emerald-800/20'
+                    : 'bg-emerald-50/50 border-emerald-200/50'
                     }`;
             case 'evening':
                 return `${baseClasses} ${isDark
-                    ? 'bg-purple-950/20 border-purple-800/20 hover:border-purple-600/40'
-                    : 'bg-purple-50/30 border-purple-200/30 hover:border-purple-300'
+                    ? 'bg-purple-950/20 border-purple-800/20'
+                    : 'bg-purple-50/50 border-purple-200/50'
                     }`;
             case 'night':
                 return `${baseClasses} ${isDark
-                    ? 'bg-slate-900/40 border-slate-800/30 hover:border-slate-700/50 opacity-70'
-                    : 'bg-slate-100/40 border-slate-200/30 hover:border-slate-300 opacity-80'
+                    ? 'bg-slate-900/30 border-slate-800/20 opacity-60'
+                    : 'bg-slate-100/50 border-slate-200/30 opacity-70'
                     }`;
             default:
                 return `${baseClasses} ${isDark
-                    ? 'bg-slate-800/30 border-slate-700/30 hover:border-slate-600/50'
-                    : 'bg-white/50 border-slate-200/30 hover:border-slate-300'
+                    ? 'bg-slate-800/20 border-slate-700/20'
+                    : 'bg-white/40 border-slate-200/30'
                     }`;
         }
     };
@@ -417,7 +418,7 @@ const ModernSchedule: React.FC<ModernScheduleProps> = ({
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
-                            className={`fixed bottom-6 right-6 px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md border-2 ${isDark
+                            className={`fixed bottom-6 right-6 px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md border-2 will-change-transform ${isDark
                                 ? 'bg-slate-800/90 border-indigo-500/50 text-white'
                                 : 'bg-white/90 border-indigo-400 text-slate-900'
                                 }`}
