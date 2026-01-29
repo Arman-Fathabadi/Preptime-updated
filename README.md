@@ -1,3 +1,12 @@
+---
+title: Preptime Backend
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # PrepTime
 
 An intelligent task scheduling system that learns from your Week 1 schedule and automatically generates the rest of your month using AI-powered pattern analysis and productivity techniques.
