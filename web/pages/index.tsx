@@ -2241,6 +2241,8 @@ export default function Home() {
             router.push("/login");
         } else {
             setIsCheckingAuth(false);
+            // Wake up ML backend silently
+            fetch('/api/health').catch(err => console.log('Background wake-up failed', err));
         }
     }, []);
 
