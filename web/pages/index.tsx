@@ -3460,7 +3460,7 @@ export default function Home() {
                                     type="button"
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => setCurrentDate(new Date())}
+                                    onClick={() => selectDateEverywhere(new Date())}
                                     className={`px-4 py-2.5 border rounded-xl transition-all duration-200 font-semibold text-sm shadow-sm flex items-center gap-2 ${isDark
                                         ? "bg-slate-800/50 border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:text-white backdrop-blur-sm"
                                         : "bg-white/50 border-slate-300/50 text-slate-600 hover:bg-slate-50 hover:text-slate-900 backdrop-blur-sm"
