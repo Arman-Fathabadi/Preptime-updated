@@ -9,7 +9,7 @@ interface WeatherData {
     isDay: boolean; // 1 = day, 0 = night
 }
 
-export default function WeatherWidget({ isDark, unit = 'fahrenheit' }: { isDark: boolean; unit?: 'celsius' | 'fahrenheit' }) {
+export default function WeatherWidget({ isDark, unit = 'celsius' }: { isDark: boolean; unit?: 'celsius' | 'fahrenheit' }) {
     const [weather, setWeather] = React.useState<WeatherData | null>(null);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
@@ -85,24 +85,8 @@ export default function WeatherWidget({ isDark, unit = 'fahrenheit' }: { isDark:
             }
         }
 
-        if (!navigator.geolocation) {
-            fetchLocationByIP();
-            return () => { isMounted = false; };
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                fetchWeather(position.coords.latitude, position.coords.longitude);
-            },
-            (err) => {
-                console.warn('Geolocation error, falling back to IP:', err.message);
-                fetchLocationByIP();
-            },
-            {
-                timeout: 5000,
-                maximumAge: 3600000
-            }
-        );
+        // Use IP-based location (no browser permission prompt)
+        fetchLocationByIP();
 
         return () => { isMounted = false; };
     }, [unit]);

@@ -14,11 +14,11 @@ export default function PreferencesPanel({ preferences, onChange, isDark }: Pref
                     Weather Unit
                 </label>
                 <select
-                    value={preferences.weatherUnit || 'fahrenheit'}
+                    value={preferences.weatherUnit || 'celsius'}
                     onChange={(e) => onChange({ ...preferences, weatherUnit: e.target.value as 'celsius' | 'fahrenheit' })}
                     className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDark
-                            ? 'bg-slate-700 border-slate-600 text-white'
-                            : 'bg-white border-gray-300 text-slate-900'
+                        ? 'bg-slate-700 border-slate-600 text-white'
+                        : 'bg-white border-gray-300 text-slate-900'
                         }`}
                 >
                     <option value="fahrenheit">Fahrenheit (°F)</option>

@@ -2312,7 +2312,7 @@ export default function Home() {
         slotStepMin: 15,
         bufferMin: 5,
         maxHeavyPerDay: 3,
-        weatherUnit: 'fahrenheit'
+        weatherUnit: 'celsius'
     });
 
     const [isLoaded, setIsLoaded] = React.useState(false);
@@ -2753,13 +2753,10 @@ export default function Home() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 whileHover={{
-                    scale: 1.05,
-                    height: "auto",
-                    minHeight: "4rem",
+                    scale: 1.03,
                     zIndex: 50,
-                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                    filter: "brightness(1.1)",
-                    opacity: 1
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08)",
+                    filter: "brightness(1.08)"
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 onClick={(e: React.MouseEvent) => {
