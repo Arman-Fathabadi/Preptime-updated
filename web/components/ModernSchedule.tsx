@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Sun, Moon, Sunset, Sunrise, Coffee, Utensils, Briefcase } from 'lucide-react';
 
 interface Task {
     id: string;
@@ -137,38 +138,18 @@ const ModernSchedule: React.FC<ModernScheduleProps> = ({
     const getCategoryIcon = (category: string) => {
         switch (category) {
             case 'morning':
-                return (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                );
+                return <Sunrise className="w-4 h-4" />;
             case 'work-morning':
             case 'work-afternoon':
-                return (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                );
+                return <Briefcase className="w-4 h-4" />;
             case 'lunch':
-                return (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                );
+                return <Utensils className="w-4 h-4" />;
             case 'evening':
-                return (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                );
+                return <Sunset className="w-4 h-4" />;
             case 'night':
-                return (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                    </svg>
-                );
+                return <Moon className="w-4 h-4" />;
             default:
-                return null;
+                return <Sun className="w-4 h-4" />;
         }
     };
 
@@ -271,7 +252,7 @@ const ModernSchedule: React.FC<ModernScheduleProps> = ({
                                                                             key={task.id}
                                                                             initial={{ opacity: 0, x: -10 }}
                                                                             animate={{ opacity: 1, x: 0 }}
-                                                                            className={`${task.color} rounded-xl p-3 border-l-4 border-opacity-80 shadow-md group cursor-pointer hover:shadow-lg transition-all ${task.completed ? 'opacity-60' : ''
+                                                                            className={`${task.color} rounded-xl p-3 border-l-4 border-opacity-80 shadow-md group cursor-pointer hover:shadow-lg transition-all relative pr-10 ${task.completed ? 'opacity-60' : ''
                                                                                 }`}
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
@@ -311,23 +292,19 @@ const ModernSchedule: React.FC<ModernScheduleProps> = ({
                                                                                         {duration >= 1 && <span className="ml-2">({duration}h)</span>}
                                                                                     </div>
                                                                                 </div>
-                                                                                <button
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        onDeleteTask?.(task.id, e);
-                                                                                    }}
-                                                                                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-2 hover:bg-white/20 rounded-lg z-10"
-                                                                                    title="Delete task"
-                                                                                >
-                                                                                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                                                        <path
-                                                                                            fillRule="evenodd"
-                                                                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414 1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                                                                            clipRule="evenodd"
-                                                                                        />
-                                                                                    </svg>
-                                                                                </button>
                                                                             </div>
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    onDeleteTask?.(task.id, e);
+                                                                                }}
+                                                                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-black/20 rounded-lg z-50 text-white"
+                                                                                title="Delete task"
+                                                                            >
+                                                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                                </svg>
+                                                                            </button>
                                                                         </motion.div>
                                                                     );
                                                                 })}

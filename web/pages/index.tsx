@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ModernSchedule from "../components/ModernSchedule";
 import MonthGeneratorButton from "../components/MonthGeneratorButton";
+import WeatherWidget from "../components/WeatherWidget";
 // import DebugPanel from "../components/DebugPanel"; // Commented out after fixing
 import type {
     Task as SharedTask,
@@ -1050,6 +1051,8 @@ function FocusTimerPanel({
     );
 }
 
+
+
 function Sidebar({
     blocks,
     activeId,
@@ -1372,14 +1375,17 @@ function Sidebar({
                             {fmtDateLong(now)} • {fmtClock(now)}
                         </p>
                     </div>
-                    <span
-                        className={`text-xs px-3 py-1.5 rounded-xl border shadow-sm font-bold backdrop-blur-sm ${isDark
-                            ? "bg-indigo-950/50 text-indigo-300 border-indigo-800/50"
-                            : "bg-indigo-50 text-indigo-700 border-indigo-200"
-                            }`}
-                    >
-                        Tasks
-                    </span>
+                    <div className="flex flex-col items-end gap-2">
+                        <span
+                            className={`text-xs px-3 py-1.5 rounded-xl border shadow-sm font-bold backdrop-blur-sm ${isDark
+                                ? "bg-indigo-950/50 text-indigo-300 border-indigo-800/50"
+                                : "bg-indigo-50 text-indigo-700 border-indigo-200"
+                                }`}
+                        >
+                            Tasks
+                        </span>
+                        <WeatherWidget isDark={isDark} />
+                    </div>
                 </div>
 
                 <MiniCalendar
@@ -2883,6 +2889,13 @@ export default function Home() {
                                             date.toDateString() === new Date().toDateString();
                                         const isSelected = selectedDateIndex === col;
 
+                                        // Check if any task occupies this slot to prevent button overlap
+                                        const hasTask = tasks.some(t =>
+                                            t.date === formatDateKey(date) &&
+                                            t.startHour <= hour &&
+                                            t.endHour > hour
+                                        );
+
                                         return (
                                             <motion.div
                                                 key={`${col}-${hour}`}
@@ -2905,21 +2918,23 @@ export default function Home() {
                                                     } ${isBusinessHours ? "bg-opacity-80" : "bg-opacity-40"
                                                     }`}
                                             >
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => handleSlotClick(col, hour, date, e)}
-                                                    className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-auto"
-                                                    aria-label="Add task"
-                                                >
-                                                    <div
-                                                        className={`w-7 h-7 rounded-lg shadow-lg flex items-center justify-center backdrop-blur-sm ${isDark
-                                                            ? "text-indigo-300 bg-slate-800/90 border border-indigo-700/50"
-                                                            : "text-indigo-600 bg-white/90 border border-indigo-200"
-                                                            }`}
+                                                {!hasTask && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => handleSlotClick(col, hour, date, e)}
+                                                        className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-30 pointer-events-auto"
+                                                        aria-label="Add task"
                                                     >
-                                                        <PlusIcon className="w-4 h-4" />
-                                                    </div>
-                                                </button>
+                                                        <div
+                                                            className={`w-7 h-7 rounded-lg shadow-lg flex items-center justify-center backdrop-blur-sm ${isDark
+                                                                ? "text-indigo-300 bg-slate-800/90 border border-indigo-700/50"
+                                                                : "text-indigo-600 bg-white/90 border border-indigo-200"
+                                                                }`}
+                                                        >
+                                                            <PlusIcon className="w-4 h-4" />
+                                                        </div>
+                                                    </button>
+                                                )}
                                             </motion.div>
                                         );
                                     })}
