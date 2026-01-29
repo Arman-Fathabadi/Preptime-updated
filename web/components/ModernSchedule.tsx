@@ -252,7 +252,8 @@ const ModernSchedule: React.FC<ModernScheduleProps> = ({
                                                                             key={task.id}
                                                                             initial={{ opacity: 0, x: -10 }}
                                                                             animate={{ opacity: 1, x: 0 }}
-                                                                            className={`${task.color} rounded-xl p-3 border-l-4 border-opacity-80 shadow-md group cursor-pointer hover:shadow-lg transition-all relative pr-10 ${task.completed ? 'opacity-60' : ''
+                                                                            title={task.title}
+                                                                            className={`${task.color} rounded-xl ${duration < 1.0 ? 'p-2' : 'p-3'} min-h-[52px] h-auto border-l-4 border-opacity-80 shadow-md group cursor-pointer hover:shadow-lg transition-all relative pr-10 ${task.completed ? 'opacity-60' : ''
                                                                                 }`}
                                                                             onClick={(e) => {
                                                                                 e.stopPropagation();
@@ -262,35 +263,65 @@ const ModernSchedule: React.FC<ModernScheduleProps> = ({
                                                                                 borderLeftColor: 'rgba(0,0,0,0.3)'
                                                                             }}
                                                                         >
-                                                                            <div className="flex items-start justify-between gap-2">
-                                                                                <div className="flex-1 min-w-0">
-                                                                                    <div className={`font-bold text-white flex items-center gap-2 transition-opacity duration-300 ${task.completed ? 'opacity-75' : ''}`}>
-                                                                                        <AnimatePresence>
-                                                                                            {task.completed && (
-                                                                                                <motion.span
-                                                                                                    initial={{ scale: 0, opacity: 0 }}
-                                                                                                    animate={{ scale: 1, opacity: 1, rotate: [0, -20, 0] }}
-                                                                                                    exit={{ scale: 0, opacity: 0 }}
-                                                                                                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                                                                                    className="text-sm bg-white/20 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0"
-                                                                                                >
-                                                                                                    ✓
-                                                                                                </motion.span>
-                                                                                            )}
-                                                                                        </AnimatePresence>
-                                                                                        <span className={`truncate transition-all duration-300 relative ${task.completed ? 'line-through decoration-white/50 decoration-2' : ''}`}>
-                                                                                            {task.title}
-                                                                                        </span>
-                                                                                    </div>
-                                                                                    {task.label && (
-                                                                                        <div className="text-xs text-white/90 mt-1 truncate">
-                                                                                            {task.label}
+                                                                            <div className="flex items-start justify-between gap-1 h-full">
+                                                                                <div className="flex-1 min-w-0 flex flex-col justify-center h-full">
+                                                                                    {duration < 1.0 ? (
+                                                                                        // Tier 1: Compact Stack for < 1 hour (Ensures readability)
+                                                                                        <div className="">
+                                                                                            <div className={`font-bold text-white flex items-start gap-1.5 transition-opacity duration-300 ${task.completed ? 'opacity-75' : ''}`}>
+                                                                                                <AnimatePresence>
+                                                                                                    {task.completed && (
+                                                                                                        <motion.span
+                                                                                                            initial={{ scale: 0, opacity: 0 }}
+                                                                                                            animate={{ scale: 1, opacity: 1 }}
+                                                                                                            className="text-[10px] bg-white/20 rounded-full w-3.5 h-3.5 flex items-center justify-center flex-shrink-0 mt-0.5"
+                                                                                                        >
+                                                                                                            ✓
+                                                                                                        </motion.span>
+                                                                                                    )}
+                                                                                                </AnimatePresence>
+                                                                                                <span className={`truncate text-xs leading-snug ${task.completed ? 'line-through decoration-white/50 decoration-2' : ''}`}>
+                                                                                                    {task.title}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <div className="flex items-center justify-between text-[10px] text-white/90 leading-tight mt-1">
+                                                                                                <span className="truncate opacity-90">{task.label || "Task"}</span>
+                                                                                                <span className="opacity-75 ml-2 flex-shrink-0">{formatHourDisplay(task.startHour)} - {formatHourDisplay(task.endHour)}</span>
+                                                                                            </div>
                                                                                         </div>
+                                                                                    ) : (
+                                                                                        // Tier 2: Full Layout for >= 1 hour
+                                                                                        <>
+                                                                                            <div className={`font-bold text-white flex items-center gap-2 transition-opacity duration-300 ${task.completed ? 'opacity-75' : ''}`}>
+
+                                                                                                <AnimatePresence>
+                                                                                                    {task.completed && (
+                                                                                                        <motion.span
+                                                                                                            initial={{ scale: 0, opacity: 0 }}
+                                                                                                            animate={{ scale: 1, opacity: 1, rotate: [0, -20, 0] }}
+                                                                                                            exit={{ scale: 0, opacity: 0 }}
+                                                                                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                                                                                            className="text-sm bg-white/20 rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0"
+                                                                                                        >
+                                                                                                            ✓
+                                                                                                        </motion.span>
+                                                                                                    )}
+                                                                                                </AnimatePresence>
+                                                                                                <span className={`truncate transition-all duration-300 relative ${task.completed ? 'line-through decoration-white/50 decoration-2' : ''}`}>
+                                                                                                    {task.title}
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            {task.label && (
+                                                                                                <div className="text-xs text-white/90 mt-1 truncate">
+                                                                                                    {task.label}
+                                                                                                </div>
+                                                                                            )}
+                                                                                            <div className="text-xs text-white/80 mt-1">
+                                                                                                {formatHourDisplay(task.startHour)} - {formatHourDisplay(task.endHour)}
+                                                                                                {duration >= 1 && <span className="ml-2">({duration}h)</span>}
+                                                                                            </div>
+                                                                                        </>
                                                                                     )}
-                                                                                    <div className="text-xs text-white/80 mt-1">
-                                                                                        {formatHourDisplay(task.startHour)} - {formatHourDisplay(task.endHour)}
-                                                                                        {duration >= 1 && <span className="ml-2">({duration}h)</span>}
-                                                                                    </div>
                                                                                 </div>
                                                                             </div>
                                                                             <button

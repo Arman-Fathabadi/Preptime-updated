@@ -478,7 +478,7 @@ function App({ Component, pageProps }) {
     }, void 0, false, {
         fileName: "[project]/Downloads/private-project/Preptime-private/web/pages/_app.tsx",
         lineNumber: 5,
-        columnNumber: 10
+        columnNumber: 12
     }, this);
 }
 _c = App;

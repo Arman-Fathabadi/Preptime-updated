@@ -1,10 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ModernSchedule from "../components/ModernSchedule";
 import MonthGeneratorButton from "../components/MonthGeneratorButton";
 import WeatherWidget from "../components/WeatherWidget";
 import PreferencesPanel from "../components/PreferencesPanel";
+
 // import DebugPanel from "../components/DebugPanel"; // Commented out after fixing
 import type {
     Task as SharedTask,
@@ -1092,6 +1095,21 @@ function Sidebar({
         const id = setInterval(() => setNow(new Date()), 10000);
         return () => clearInterval(id);
     }, []);
+
+    const [greeting, setGreeting] = React.useState("");
+    const [username, setUsername] = React.useState("");
+
+    React.useEffect(() => {
+        // Calculate greeting based on hour
+        const hour = now.getHours();
+        if (hour >= 5 && hour < 12) setGreeting("Good Morning");
+        else if (hour >= 12 && hour < 18) setGreeting("Good Afternoon");
+        else setGreeting("Good Evening");
+
+        // Get username
+        const name = localStorage.getItem("preptime-username");
+        setUsername(name || "Guest");
+    }, [now]);
     const [menuFor, setMenuFor] = React.useState<string | null>(null);
     const [menuPos, setMenuPos] = React.useState<{
         top: number;
@@ -1376,6 +1394,9 @@ function Sidebar({
                                 }`}
                         >
                             {fmtDateLong(now)} • {fmtClock(now)}
+                        </p>
+                        <p className={`text-sm mt-1 font-medium ${isDark ? 'text-indigo-300' : 'text-indigo-600'}`}>
+                            {greeting}, {username}!
                         </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
@@ -2207,6 +2228,45 @@ function Sidebar({
     );
 }
 export default function Home() {
+    const router = useRouter();
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+    useEffect(() => {
+        // Simple "Auth" check: do we have a username?
+        const username = localStorage.getItem("preptime-username");
+        if (!username) {
+            router.push("/login");
+        } else {
+            setIsCheckingAuth(false);
+        }
+    }, []);
+
+    const handleImportComplete = (events: any[]) => {
+        // Logic to merge imported events into existing tasks/blocks
+        // For now, we'll just log them or alert
+        console.log("Imported events:", events);
+
+        // Transform and add to tasks (simplified mapping)
+        const newTasks = events.map(e => ({
+            id: e.id,
+            title: e.title,
+            // Mapping logic needs to be robust for dates but for now...
+            date: e.startValue ? e.startValue.split('T')[0] : new Date().toISOString().split('T')[0],
+            startHour: 9, // Default
+            endHour: 10, // Default
+            description: "Imported Event",
+            isHeavy: false,
+            completed: false,
+            label: "Imported",
+            day: new Date(e.startValue || new Date()).getDay(),
+            color: "bg-blue-500"
+        }));
+
+        setTasks(prev => [...prev, ...newTasks]);
+        localStorage.setItem("preptime-imported", "true");
+    };
+
+    // ... existing state initialization ...
     const [currentDate, setCurrentDate] = useState<Date>(new Date());
     const [currentMonday, setCurrentMonday] = useState<Date>(
         getMonday(new Date())
@@ -2694,7 +2754,7 @@ export default function Home() {
                     toggleTaskCompletion(task.id);
                 }}
                 className={`absolute pointer-events-auto ${task.color
-                    } border-l-4 border-opacity-80 rounded-r px-2 py-1 text-xs font-medium text-white overflow-hidden cursor-pointer hover:opacity-90 transition-all z-10 shadow-sm group ${task.completed ? "opacity-50" : ""
+                    } border-l-4 border-opacity-80 rounded-r ${heightInRows < 0.5 ? 'px-1 py-0.5' : 'px-2 py-1'} text-xs font-medium text-white overflow-hidden cursor-pointer transform transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)] hover:scale-[1.03] hover:shadow-2xl hover:brightness-110 hover:opacity-100 hover:!h-auto hover:!min-h-[3.5rem] hover:z-50 z-10 shadow-sm group ${task.completed ? "opacity-50" : ""
                     }`}
                 style={{
                     top: `${(start - startHour) * 3.5}rem`,
@@ -2702,6 +2762,7 @@ export default function Home() {
                     left: "2px",
                     right: "2px",
                     borderLeftColor: "rgba(0,0,0,0.2)",
+                    transformOrigin: "center left",
                 }}
                 title={`${task.title}${task.label ? " - " + task.label : ""} ${task.completed ? "(Completed)" : ""
                     }`}
@@ -3242,6 +3303,14 @@ export default function Home() {
     };
 
     const stats = getTaskStats();
+
+    if (isCheckingAuth) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-slate-900">
+                <Loader2 className="animate-spin h-8 w-8 text-white" />
+            </div>
+        );
+    }
 
     return (
         <main
@@ -4456,374 +4525,372 @@ export default function Home() {
                 </div>
             </div>
 
-            {showSettings && (
-                <div
-                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-                    onClick={() => setShowSettings(false)}
-                >
-                    <div
-                        className={`rounded-xl shadow-2xl w-full max-w-md mx-4 ${isDark ? "bg-slate-800" : "bg-white"
-                            }`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div
-                            className={`bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4 rounded-t-xl transition-all duration-500`}
+            {/* Settings Modal */}
+            <AnimatePresence>
+                {showSettings && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className={`w-full max-w-md rounded-2xl shadow-2xl overflow-hidden ${isDark ? "bg-slate-800" : "bg-white"
+                                }`}
                         >
-                            <h3 className="text-lg font-bold text-white">Settings</h3>
-                        </div>
-                        <div className="p-6 space-y-6">
-                            {/* General Preferences */}
-                            <div>
-                                <label
-                                    className={`block text-sm font-semibold mb-3 ${isDark ? "text-slate-200" : "text-slate-700"
+                            <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+                                <h2 className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                                    Settings
+                                </h2>
+                                <button
+                                    onClick={() => setShowSettings(false)}
+                                    className={`p-2 rounded-lg transition-colors ${isDark
+                                        ? "hover:bg-slate-700 text-slate-400 hover:text-white"
+                                        : "hover:bg-slate-100 text-slate-500 hover:text-slate-900"
                                         }`}
                                 >
-                                    General Preferences
-                                </label>
-                                <PreferencesPanel preferences={preferences} onChange={setPreferences} />
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
                             </div>
 
-                            <div className={`border-t pt-6 ${isDark ? "border-slate-700" : "border-slate-200"}`}>
-                                <label
-                                    className={`block text-sm font-semibold mb-3 ${isDark ? "text-slate-200" : "text-slate-700"
-                                        }`}
-                                >
-                                    Theme
-                                </label>
-                                <div className="space-y-2">
-                                    {[
-                                        { value: "system", label: "System Default", icon: "💻" },
-                                        { value: "light", label: "Light Mode", icon: "☀️" },
-                                        { value: "dark", label: "Dark Mode", icon: "🌙" },
-                                    ].map((option) => (
-                                        <button
-                                            key={option.value}
-                                            onClick={() => handleThemeChange(option.value as any)}
-                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all ${theme === option.value
-                                                ? "border-indigo-600 bg-indigo-50/50"
-                                                : isDark
-                                                    ? "border-slate-700 hover:border-slate-600 bg-slate-700"
-                                                    : "border-slate-200 hover:border-slate-300"
-                                                }`}
-                                        >
-                                            <span className="text-2xl">{option.icon}</span>
-                                            <span
-                                                className={`flex-1 text-left font-medium ${theme === option.value
-                                                    ? "text-indigo-600"
+                            <div className="p-6 space-y-6">
+                                {/* Preferences Panel */}
+                                <PreferencesPanel
+                                    preferences={preferences}
+                                    onChange={(newPrefs) => setPreferences(newPrefs)}
+                                    isDark={isDark}
+                                />
+
+                                <div>
+                                    <label
+                                        className={`block text-sm font-semibold mb-3 ${isDark ? "text-slate-200" : "text-slate-700"
+                                            }`}
+                                    >
+                                        Theme
+                                    </label>
+                                    <div className="space-y-2">
+                                        {[
+                                            { value: "system", label: "System Default", icon: "💻" },
+                                            { value: "light", label: "Light Mode", icon: "☀️" },
+                                            { value: "dark", label: "Dark Mode", icon: "🌙" },
+                                        ].map((option) => (
+                                            <button
+                                                key={option.value}
+                                                onClick={() => handleThemeChange(option.value as any)}
+                                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all ${theme === option.value
+                                                    ? "border-indigo-600 bg-indigo-50/50"
                                                     : isDark
-                                                        ? "text-slate-200"
-                                                        : "text-slate-700"
+                                                        ? "border-slate-700 hover:border-slate-600 bg-slate-700"
+                                                        : "border-slate-200 hover:border-slate-300"
                                                     }`}
                                             >
-                                                {option.label}
-                                            </span>
-                                            {theme === option.value && (
-                                                <svg
-                                                    className="w-5 h-5 text-indigo-600"
-                                                    fill="currentColor"
-                                                    viewBox="0 0 20 20"
+                                                <span className="text-2xl">{option.icon}</span>
+                                                <span
+                                                    className={`flex-1 text-left font-medium ${theme === option.value
+                                                        ? "text-indigo-600"
+                                                        : isDark
+                                                            ? "text-slate-200"
+                                                            : "text-slate-700"
+                                                        }`}
                                                 >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            )}
-                                        </button>
-                                    ))}
+                                                    {option.label}
+                                                </span>
+                                                {theme === option.value && (
+                                                    <svg
+                                                        className="w-5 h-5 text-indigo-600"
+                                                        fill="currentColor"
+                                                        viewBox="0 0 20 20"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className={`border-t pt-6 ${isDark ? "border-slate-700" : "border-slate-200"}`}>
+                                    <label
+                                        className={`block text-sm font-semibold mb-3 ${isDark ? "text-slate-200" : "text-slate-700"
+                                            }`}
+                                    >
+                                        Data Management
+                                    </label>
+                                    <button
+                                        onClick={() => {
+                                            if (
+                                                confirm(
+                                                    "Are you sure you want to clear all tasks and time blocks? This cannot be undone."
+                                                )
+                                            ) {
+                                                setTasks([]);
+                                                setBlocks([]);
+                                                localStorage.removeItem("preptime-tasks");
+                                                localStorage.removeItem("preptime-blocks");
+                                                setShowSettings(false);
+                                                alert("All tasks and time blocks have been cleared!");
+                                            }
+                                        }}
+                                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all ${isDark
+                                            ? "border-red-700 hover:border-red-600 bg-red-900/20 hover:bg-red-900/30"
+                                            : "border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100"
+                                            }`}
+                                    >
+                                        <span className="text-2xl">🗑️</span>
+                                        <div className="flex-1 text-left">
+                                            <div
+                                                className={`font-medium ${isDark ? "text-red-400" : "text-red-600"
+                                                    }`}
+                                            >
+                                                Clear All Tasks
+                                            </div>
+                                            <div
+                                                className={`text-xs ${isDark ? "text-red-500" : "text-red-500"
+                                                    }`}
+                                            >
+                                                Resets local data
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+
+
+
+            {
+                showModal && selectedSlot && (
+                    <div
+                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+                        onClick={closeModal}
+                    >
+                        <div
+                            className={`rounded-xl shadow-2xl w-full max-w-md my-8 ${isDark ? "bg-slate-800" : "bg-white"
+                                }`}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className={`${selectedColor.value} px-6 py-4 rounded-t-xl`}>
+                                <h3 className="text-lg font-bold text-white">Add Task</h3>
+                                <p className="text-sm text-white/90 mt-1">
+                                    {viewType === "day"
+                                        ? formatFullDate(currentDate)
+                                        : `${days[selectedSlot.day]}, ${formatDate(
+                                            selectedSlot.date
+                                        )}`}
+                                </p>
+                            </div>
+
+                            <div className="p-6 space-y-4">
+                                <div>
+                                    <label
+                                        className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
+                                            }`}
+                                    >
+                                        Task Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={taskTitle}
+                                        onChange={(e) => setTaskTitle(e.target.value)}
+                                        placeholder="e.g. Team Meeting"
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
+                                            ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                                            : "border-slate-300"
+                                            }`}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
+                                        className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
+                                            }`}
+                                    >
+                                        Start Time
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="time"
+                                            value={startTime}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                setStartTime(value);
+                                                if (value) {
+                                                    const [hours] = value.split(":").map(Number);
+                                                    setStartAmPm(hours >= 12 ? "PM" : "AM");
+                                                }
+                                            }}
+                                            className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
+                                                ? "bg-slate-700 border-slate-600 text-white"
+                                                : "border-slate-300"
+                                                }`}
+                                        />
+                                        <select
+                                            value={startAmPm}
+                                            onChange={(e) => setStartAmPm(e.target.value)}
+                                            className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
+                                                ? "bg-slate-700 border-slate-600 text-white"
+                                                : "border-slate-300"
+                                                }`}
+                                        >
+                                            <option value="AM">AM</option>
+                                            <option value="PM">PM</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label
+                                        className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
+                                            }`}
+                                    >
+                                        End Time
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="time"
+                                            value={endTime}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                setEndTime(value);
+                                                if (value) {
+                                                    const [hours] = value.split(":").map(Number);
+                                                    setEndAmPm(hours >= 12 ? "PM" : "AM");
+                                                }
+                                            }}
+                                            className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
+                                                ? "bg-slate-700 border-slate-600 text-white"
+                                                : "border-slate-300"
+                                                }`}
+                                        />
+                                        <select
+                                            value={endAmPm}
+                                            onChange={(e) => setEndAmPm(e.target.value)}
+                                            className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
+                                                ? "bg-slate-700 border-slate-600 text-white"
+                                                : "border-slate-300"
+                                                }`}
+                                        >
+                                            <option value="AM">AM</option>
+                                            <option value="PM">PM</option>
+                                        </select>
+                                    </div>
+                                    {!isValidTime() && (
+                                        <p className="text-xs text-red-600 mt-1">
+                                            End time must be after start time
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label
+                                        className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
+                                            }`}
+                                    >
+                                        Color
+                                    </label>
+                                    <div className="grid grid-cols-10 gap-2">
+                                        {taskColors.map((color) => (
+                                            <button
+                                                key={color.value}
+                                                type="button"
+                                                onClick={() => setSelectedColor(color)}
+                                                className={`w-8 h-8 rounded-lg ${color.value
+                                                    } border-2 transition-all ${selectedColor.value === color.value
+                                                        ? "border-indigo-600 scale-110 ring-2 ring-indigo-400"
+                                                        : "border-transparent hover:scale-105"
+                                                    }`}
+                                                title={color.name}
+                                            />
+                                        ))}
+                                    </div>
+                                    <p
+                                        className={`text-xs mt-2 ${isDark ? "text-slate-400" : "text-slate-500"
+                                            }`}
+                                    >
+                                        Selected: {selectedColor.name}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label
+                                        className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
+                                            }`}
+                                    >
+                                        Label/Tag Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={taskLabel}
+                                        onChange={(e) => setTaskLabel(e.target.value)}
+                                        placeholder="e.g. Work, Study, Exercise"
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
+                                            ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                                            : "border-slate-300"
+                                            }`}
+                                    />
+                                    <p
+                                        className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-500"
+                                            }`}
+                                    >
+                                        Assign a category or subject name to this task
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label
+                                        className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
+                                            }`}
+                                    >
+                                        Description (optional)
+                                    </label>
+                                    <textarea
+                                        value={taskDescription}
+                                        onChange={(e) => setTaskDescription(e.target.value)}
+                                        placeholder="Add notes or details..."
+                                        rows={3}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none ${isDark
+                                            ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                                            : "border-slate-300"
+                                            }`}
+                                    />
                                 </div>
                             </div>
 
-                            {/* Clear All Tasks Section */}
                             <div
-                                className={`border-t pt-6 ${isDark ? "border-slate-700" : "border-slate-200"
+                                className={`flex gap-3 px-6 py-4 rounded-b-xl border-t ${isDark
+                                    ? "bg-slate-700 border-slate-600"
+                                    : "bg-slate-50 border-slate-200"
                                     }`}
                             >
-                                <label
-                                    className={`block text-sm font-semibold mb-3 ${isDark ? "text-slate-200" : "text-slate-700"
-                                        }`}
-                                >
-                                    Data Management
-                                </label>
                                 <button
-                                    onClick={() => {
-                                        if (
-                                            confirm(
-                                                "Are you sure you want to clear all tasks and time blocks? This cannot be undone."
-                                            )
-                                        ) {
-                                            setTasks([]);
-                                            setBlocks([]);
-                                            localStorage.removeItem("preptime-tasks");
-                                            localStorage.removeItem("preptime-blocks");
-                                            setShowSettings(false);
-                                            alert("All tasks and time blocks have been cleared!");
-                                        }
-                                    }}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all ${isDark
-                                        ? "border-red-700 hover:border-red-600 bg-red-900/20 hover:bg-red-900/30"
-                                        : "border-red-200 hover:border-red-300 bg-red-50 hover:bg-red-100"
+                                    onClick={closeModal}
+                                    className={`flex-1 px-4 py-2 border rounded-lg transition-colors font-medium text-sm ${isDark
+                                        ? "border-slate-600 hover:bg-slate-600 text-white"
+                                        : "border-slate-300 hover:bg-white"
                                         }`}
                                 >
-                                    <span className="text-2xl">🗑️</span>
-                                    <div className="flex-1 text-left">
-                                        <div
-                                            className={`font-medium ${isDark ? "text-red-400" : "text-red-600"
-                                                }`}
-                                        >
-                                            Clear All Tasks
-                                        </div>
-                                        <div
-                                            className={`text-xs ${isDark ? "text-red-500" : "text-red-500"
-                                                }`}
-                                        >
-                                            Remove all tasks and time blocks
-                                        </div>
-                                    </div>
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={saveTask}
+                                    disabled={!taskTitle.trim() || !isValidTime()}
+                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm disabled:bg-slate-300 disabled:cursor-not-allowed"
+                                >
+                                    Save Task
                                 </button>
                             </div>
                         </div>
-                        <div
-                            className={`px-6 py-4 rounded-b-xl border-t ${isDark
-                                ? "bg-slate-700 border-slate-600"
-                                : "bg-slate-50 border-slate-200"
-                                }`}
-                        >
-                            <button
-                                onClick={() => setShowSettings(false)}
-                                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
-                            >
-                                Done
-                            </button>
-                        </div>
                     </div>
-                </div>
-            )}
-
-            {showModal && selectedSlot && (
-                <div
-                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
-                    onClick={closeModal}
-                >
-                    <div
-                        className={`rounded-xl shadow-2xl w-full max-w-md my-8 ${isDark ? "bg-slate-800" : "bg-white"
-                            }`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className={`${selectedColor.value} px-6 py-4 rounded-t-xl`}>
-                            <h3 className="text-lg font-bold text-white">Add Task</h3>
-                            <p className="text-sm text-white/90 mt-1">
-                                {viewType === "day"
-                                    ? formatFullDate(currentDate)
-                                    : `${days[selectedSlot.day]}, ${formatDate(
-                                        selectedSlot.date
-                                    )}`}
-                            </p>
-                        </div>
-
-                        <div className="p-6 space-y-4">
-                            <div>
-                                <label
-                                    className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
-                                        }`}
-                                >
-                                    Task Title
-                                </label>
-                                <input
-                                    type="text"
-                                    value={taskTitle}
-                                    onChange={(e) => setTaskTitle(e.target.value)}
-                                    placeholder="e.g. Team Meeting"
-                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
-                                        ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                                        : "border-slate-300"
-                                        }`}
-                                />
-                            </div>
-
-                            <div>
-                                <label
-                                    className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
-                                        }`}
-                                >
-                                    Start Time
-                                </label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="time"
-                                        value={startTime}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            setStartTime(value);
-                                            if (value) {
-                                                const [hours] = value.split(":").map(Number);
-                                                setStartAmPm(hours >= 12 ? "PM" : "AM");
-                                            }
-                                        }}
-                                        className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
-                                            ? "bg-slate-700 border-slate-600 text-white"
-                                            : "border-slate-300"
-                                            }`}
-                                    />
-                                    <select
-                                        value={startAmPm}
-                                        onChange={(e) => setStartAmPm(e.target.value)}
-                                        className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
-                                            ? "bg-slate-700 border-slate-600 text-white"
-                                            : "border-slate-300"
-                                            }`}
-                                    >
-                                        <option value="AM">AM</option>
-                                        <option value="PM">PM</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label
-                                    className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
-                                        }`}
-                                >
-                                    End Time
-                                </label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="time"
-                                        value={endTime}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            setEndTime(value);
-                                            if (value) {
-                                                const [hours] = value.split(":").map(Number);
-                                                setEndAmPm(hours >= 12 ? "PM" : "AM");
-                                            }
-                                        }}
-                                        className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
-                                            ? "bg-slate-700 border-slate-600 text-white"
-                                            : "border-slate-300"
-                                            }`}
-                                    />
-                                    <select
-                                        value={endAmPm}
-                                        onChange={(e) => setEndAmPm(e.target.value)}
-                                        className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
-                                            ? "bg-slate-700 border-slate-600 text-white"
-                                            : "border-slate-300"
-                                            }`}
-                                    >
-                                        <option value="AM">AM</option>
-                                        <option value="PM">PM</option>
-                                    </select>
-                                </div>
-                                {!isValidTime() && (
-                                    <p className="text-xs text-red-600 mt-1">
-                                        End time must be after start time
-                                    </p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label
-                                    className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
-                                        }`}
-                                >
-                                    Color
-                                </label>
-                                <div className="grid grid-cols-10 gap-2">
-                                    {taskColors.map((color) => (
-                                        <button
-                                            key={color.value}
-                                            type="button"
-                                            onClick={() => setSelectedColor(color)}
-                                            className={`w-8 h-8 rounded-lg ${color.value
-                                                } border-2 transition-all ${selectedColor.value === color.value
-                                                    ? "border-indigo-600 scale-110 ring-2 ring-indigo-400"
-                                                    : "border-transparent hover:scale-105"
-                                                }`}
-                                            title={color.name}
-                                        />
-                                    ))}
-                                </div>
-                                <p
-                                    className={`text-xs mt-2 ${isDark ? "text-slate-400" : "text-slate-500"
-                                        }`}
-                                >
-                                    Selected: {selectedColor.name}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label
-                                    className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
-                                        }`}
-                                >
-                                    Label/Tag Name
-                                </label>
-                                <input
-                                    type="text"
-                                    value={taskLabel}
-                                    onChange={(e) => setTaskLabel(e.target.value)}
-                                    placeholder="e.g. Work, Study, Exercise"
-                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${isDark
-                                        ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                                        : "border-slate-300"
-                                        }`}
-                                />
-                                <p
-                                    className={`text-xs mt-1 ${isDark ? "text-slate-400" : "text-slate-500"
-                                        }`}
-                                >
-                                    Assign a category or subject name to this task
-                                </p>
-                            </div>
-
-                            <div>
-                                <label
-                                    className={`block text-sm font-semibold mb-2 ${isDark ? "text-slate-200" : "text-slate-700"
-                                        }`}
-                                >
-                                    Description (optional)
-                                </label>
-                                <textarea
-                                    value={taskDescription}
-                                    onChange={(e) => setTaskDescription(e.target.value)}
-                                    placeholder="Add notes or details..."
-                                    rows={3}
-                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none ${isDark
-                                        ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-                                        : "border-slate-300"
-                                        }`}
-                                />
-                            </div>
-                        </div>
-
-                        <div
-                            className={`flex gap-3 px-6 py-4 rounded-b-xl border-t ${isDark
-                                ? "bg-slate-700 border-slate-600"
-                                : "bg-slate-50 border-slate-200"
-                                }`}
-                        >
-                            <button
-                                onClick={closeModal}
-                                className={`flex-1 px-4 py-2 border rounded-lg transition-colors font-medium text-sm ${isDark
-                                    ? "border-slate-600 hover:bg-slate-600 text-white"
-                                    : "border-slate-300 hover:bg-white"
-                                    }`}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={saveTask}
-                                disabled={!taskTitle.trim() || !isValidTime()}
-                                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm disabled:bg-slate-300 disabled:cursor-not-allowed"
-                            >
-                                Save Task
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Debug Panel - Commented out after fixing task display issue */}
             {/* <DebugPanel 
@@ -4831,6 +4898,6 @@ export default function Home() {
         currentDate={currentDate}
         formatDateKey={formatDateKey} 
       /> */}
-        </main>
+        </main >
     );
 }
