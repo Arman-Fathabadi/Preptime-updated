@@ -1569,7 +1569,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$proj
 var _s = __turbopack_context__.k.signature();
 ;
 ;
-function WeatherWidget({ isDark }) {
+function WeatherWidget({ isDark, unit = 'fahrenheit' }) {
     _s();
     const [weather, setWeather] = __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"].useState(null);
     const [loading, setLoading] = __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$project$2f$Preptime$2d$private$2f$web$2f$node_modules$2f$react$2f$index$2e$js__$5b$client$5d$__$28$ecmascript$29$__["default"].useState(true);
@@ -1586,7 +1586,7 @@ function WeatherWidget({ isDark }) {
                     try {
                         const { latitude, longitude } = position.coords;
                         // Fetch from Open-Meteo (Free, no key)
-                        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
+                        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=${unit}`);
                         if (!res.ok) throw new Error('Failed to fetch weather');
                         const data = await res.json();
                         const current = data.current;
@@ -1609,7 +1609,9 @@ function WeatherWidget({ isDark }) {
                 }
             }["WeatherWidget.useEffect"]);
         }
-    }["WeatherWidget.useEffect"], []);
+    }["WeatherWidget.useEffect"], [
+        unit
+    ]);
     function getWeatherDescription(code) {
         // WMO Weather interpretation codes (WW)
         if (code === 0) return 'Clear';
@@ -1699,7 +1701,8 @@ function WeatherWidget({ isDark }) {
                 className: "font-semibold",
                 children: [
                     weather?.temp,
-                    "°F"
+                    "°",
+                    unit === 'celsius' ? 'C' : 'F'
                 ]
             }, void 0, true, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/components/WeatherWidget.tsx",

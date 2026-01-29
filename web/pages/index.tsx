@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ModernSchedule from "../components/ModernSchedule";
 import MonthGeneratorButton from "../components/MonthGeneratorButton";
 import WeatherWidget from "../components/WeatherWidget";
+import PreferencesPanel from "../components/PreferencesPanel";
 // import DebugPanel from "../components/DebugPanel"; // Commented out after fixing
 import type {
     Task as SharedTask,
@@ -1066,6 +1067,7 @@ function Sidebar({
     manualOrderByDate,
     onSetManualOrderForDate,
     isDark,
+    weatherUnit,
 }: {
     blocks: TimeBlock[];
     activeId?: string;
@@ -1080,6 +1082,7 @@ function Sidebar({
     manualOrderByDate: Record<string, string[]>;
     onSetManualOrderForDate: (dateISO: string, idsInOrder: string[]) => void;
     isDark: boolean;
+    weatherUnit?: 'celsius' | 'fahrenheit';
 }) {
     // Internal time state for sorting and header clock
     // Update every 10 seconds is enough for minute-level display and sorting
@@ -1384,7 +1387,7 @@ function Sidebar({
                         >
                             Tasks
                         </span>
-                        <WeatherWidget isDark={isDark} />
+                        <WeatherWidget isDark={isDark} unit={weatherUnit} />
                     </div>
                 </div>
 
@@ -2242,6 +2245,16 @@ export default function Home() {
     const [manualOrderByDate, setManualOrderByDate] = React.useState<
         Record<string, string[]>
     >({});
+
+    const [preferences, setPreferences] = useState<Preferences>({
+        dayStartHour: 7,
+        dayEndHour: 23,
+        slotStepMin: 15,
+        bufferMin: 5,
+        maxHeavyPerDay: 3,
+        weatherUnit: 'fahrenheit'
+    });
+
     const [isLoaded, setIsLoaded] = React.useState(false);
 
     // Save blocks to localStorage whenever they change
@@ -2267,6 +2280,12 @@ export default function Home() {
         if (!isLoaded) return;
         localStorage.setItem("preptime-selected-date", selectedDate.toISOString());
     }, [selectedDate, isLoaded]);
+
+    // Persist preferences
+    React.useEffect(() => {
+        if (!isLoaded) return;
+        localStorage.setItem("preptime-preferences", JSON.stringify(preferences));
+    }, [preferences, isLoaded]);
     function selectDateEverywhere(d: Date) {
         const nd = new Date(d);
         nd.setHours(0, 0, 0, 0);
@@ -2324,6 +2343,15 @@ export default function Home() {
             | null;
         const savedView = localStorage.getItem("preptime-view") as ViewType | null;
         const savedTasks = localStorage.getItem("preptime-tasks");
+        const savedPrefs = localStorage.getItem("preptime-preferences");
+
+        if (savedPrefs) {
+            try {
+                setPreferences(JSON.parse(savedPrefs));
+            } catch (e) {
+                console.error("Error parsing preferences", e);
+            }
+        }
 
         if (savedTheme) setTheme(savedTheme);
         if (savedView) setViewType(savedView);
@@ -3239,6 +3267,7 @@ export default function Home() {
                         setManualOrderByDate((prev) => ({ ...prev, [dateISO]: idsInOrder }))
                     }
                     isDark={isDark}
+                    weatherUnit={preferences.weatherUnit}
                 />
 
                 {/* RIGHT SIDE - Calendar */}
@@ -4443,7 +4472,18 @@ export default function Home() {
                             <h3 className="text-lg font-bold text-white">Settings</h3>
                         </div>
                         <div className="p-6 space-y-6">
+                            {/* General Preferences */}
                             <div>
+                                <label
+                                    className={`block text-sm font-semibold mb-3 ${isDark ? "text-slate-200" : "text-slate-700"
+                                        }`}
+                                >
+                                    General Preferences
+                                </label>
+                                <PreferencesPanel preferences={preferences} onChange={setPreferences} />
+                            </div>
+
+                            <div className={`border-t pt-6 ${isDark ? "border-slate-700" : "border-slate-200"}`}>
                                 <label
                                     className={`block text-sm font-semibold mb-3 ${isDark ? "text-slate-200" : "text-slate-700"
                                         }`}

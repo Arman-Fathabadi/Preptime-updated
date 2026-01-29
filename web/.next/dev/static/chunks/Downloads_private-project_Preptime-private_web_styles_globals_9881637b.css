@@ -1282,6 +1282,11 @@ img, video {
   border-color: rgb(24 24 27 / var(--tw-border-opacity, 1));
 }
 
+.border-red-800 {
+  --tw-border-opacity: 1;
+  border-color: rgb(153 27 27 / var(--tw-border-opacity, 1));
+}
+
 .border-opacity-80 {
   --tw-border-opacity: .8;
 }
@@ -2467,6 +2472,11 @@ img, video {
 .text-zinc-900 {
   --tw-text-opacity: 1;
   color: rgb(24 24 27 / var(--tw-text-opacity, 1));
+}
+
+.text-red-300 {
+  --tw-text-opacity: 1;
+  color: rgb(252 165 165 / var(--tw-text-opacity, 1));
 }
 
 .line-through {

@@ -1089,7 +1089,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$Downloads$2f$private$2d$proj
 ;
 ;
 ;
-function WeatherWidget({ isDark }) {
+function WeatherWidget({ isDark, unit = 'fahrenheit' }) {
     const [weather, setWeather] = __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["default"].useState(null);
     const [loading, setLoading] = __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["default"].useState(true);
     const [error, setError] = __TURBOPACK__imported__module__$5b$externals$5d2f$react__$5b$external$5d$__$28$react$2c$__cjs$29$__["default"].useState(null);
@@ -1103,7 +1103,7 @@ function WeatherWidget({ isDark }) {
             try {
                 const { latitude, longitude } = position.coords;
                 // Fetch from Open-Meteo (Free, no key)
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=${unit}`);
                 if (!res.ok) throw new Error('Failed to fetch weather');
                 const data = await res.json();
                 const current = data.current;
@@ -1122,7 +1122,9 @@ function WeatherWidget({ isDark }) {
             setError('Location access denied');
             setLoading(false);
         });
-    }, []);
+    }, [
+        unit
+    ]);
     function getWeatherDescription(code) {
         // WMO Weather interpretation codes (WW)
         if (code === 0) return 'Clear';
@@ -1212,7 +1214,8 @@ function WeatherWidget({ isDark }) {
                 className: "font-semibold",
                 children: [
                     weather?.temp,
-                    "°F"
+                    "°",
+                    unit === 'celsius' ? 'C' : 'F'
                 ]
             }, void 0, true, {
                 fileName: "[project]/Downloads/private-project/Preptime-private/web/components/WeatherWidget.tsx",
