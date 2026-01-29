@@ -56,8 +56,8 @@ export default function TaskSidebar({
                     <button
                         onClick={() => setActiveTab('tasks')}
                         className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'tasks'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
                         Tasks ({tasks.length})
@@ -65,8 +65,8 @@ export default function TaskSidebar({
                     <button
                         onClick={() => setActiveTab('events')}
                         className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'events'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
                         Events ({events.length})
@@ -74,8 +74,8 @@ export default function TaskSidebar({
                     <button
                         onClick={() => setActiveTab('preferences')}
                         className={`flex-1 py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'preferences'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
                         Settings
@@ -175,7 +175,7 @@ export default function TaskSidebar({
 
                 {activeTab === 'preferences' && (
                     <div className="p-4">
-                        <PreferencesPanel preferences={preferences} onChange={onUpdatePreferences} />
+                        <PreferencesPanel preferences={preferences} onChange={onUpdatePreferences} isDark={false} />
                     </div>
                 )}
             </div>
