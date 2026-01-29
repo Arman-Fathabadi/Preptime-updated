@@ -1,0 +1,25 @@
+# Git
+.git
+.gitignore
+
+# Web project
+web/node_modules
+web/.next
+web/out
+web/.env.local
+web/.env
+
+# Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/venv
+**/env
+**/.env
+.pytest_cache
+.coverage
+htmlcov
+
+# OS
+.DS_Store
