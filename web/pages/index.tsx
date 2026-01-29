@@ -2754,16 +2754,14 @@ export default function Home() {
         return (
             <motion.div
                 key={task.id}
-                layout
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 whileHover={{
-                    scale: 1.03,
+                    scale: 1.02,
                     zIndex: 50,
-                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08)",
-                    filter: "brightness(1.08)"
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
                 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                transition={{ duration: 0.2 }}
                 onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     toggleTaskCompletion(task.id);
