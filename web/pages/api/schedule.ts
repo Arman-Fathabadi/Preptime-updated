@@ -43,11 +43,15 @@ export default async function handler(
         console.log(`Submitting schedule request to: ${ML_SERVICE_URL}/schedule`);
 
         // Proxy request to FastAPI service
+        // Proxy request to FastAPI service
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (process.env.HF_TOKEN) {
+            headers['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
+        }
+
         const response = await fetch(`${ML_SERVICE_URL}/schedule`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify(req.body),
         });
 
