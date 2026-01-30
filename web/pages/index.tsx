@@ -2761,22 +2761,14 @@ export default function Home() {
         const endTimeDisplay = formatHour(task.endHour);
 
         return (
-            <motion.div
+            <div
                 key={task.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                whileHover={{
-                    scale: 1.02,
-                    zIndex: 50,
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                }}
-                transition={{ duration: 0.2 }}
                 onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
                     toggleTaskCompletion(task.id);
                 }}
                 className={`absolute pointer-events-auto ${task.color
-                    } border-l-4 border-opacity-80 rounded-r ${heightInRows < 0.5 ? 'px-1 py-0.5' : 'px-2 py-1'} text-xs font-medium text-white overflow-hidden cursor-pointer z-10 shadow-sm group ${task.completed ? "opacity-50" : ""
+                    } border-l-4 border-opacity-80 rounded-r ${heightInRows < 0.5 ? 'px-1 py-0.5' : 'px-2 py-1'} text-xs font-medium text-white overflow-hidden cursor-pointer z-10 shadow-sm group transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:z-50 ${task.completed ? "opacity-50" : ""
                     }`}
                 style={{
                     top: `${(start - startHour) * 3.5}rem`,
@@ -2821,7 +2813,7 @@ export default function Home() {
                         </svg>
                     </button>
                 </div>
-            </motion.div>
+            </div>
         );
     };
 
@@ -2914,6 +2906,16 @@ export default function Home() {
             addDays(currentMonday, i)
         );
 
+        // OPTIMIZATION: Pre-calculate busy slots to avoid O(N) lookup in the render loop
+        // Key: `${dateKey}-${hour}`
+        const busySlots = new Set<string>();
+        tasks.forEach(task => {
+            const dateKey = task.date;
+            for (let h = task.startHour; h < task.endHour; h++) {
+                busySlots.add(`${dateKey}-${h}`);
+            }
+        });
+
         return (
             <div className="overflow-x-auto">
                 <div className="min-w-[900px]">
@@ -2931,12 +2933,10 @@ export default function Home() {
                             const isSelected = selectedDateIndex === i;
 
                             return (
-                                <motion.div
+                                <div
                                     key={i}
-                                    whileHover={{ scale: 1.02, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
                                     onClick={() => handleDateClick(i)}
-                                    className={`p-4 text-center border-l first:border-l-0 cursor-pointer transition-all duration-200 ${isSelected
+                                    className={`p-4 text-center border-l first:border-l-0 cursor-pointer transition-all duration-200 hover:scale-[1.02] ${isSelected
                                         ? "bg-gradient-to-br from-indigo-600 to-purple-600 shadow-lg"
                                         : isDark
                                             ? "border-slate-700/50 hover:bg-slate-800/50"
@@ -2966,7 +2966,7 @@ export default function Home() {
                                     >
                                         {date.getDate()}
                                     </div>
-                                </motion.div>
+                                </div>
                             );
                         })}
                     </div>
@@ -2999,23 +2999,19 @@ export default function Home() {
                                         const isToday =
                                             date.toDateString() === new Date().toDateString();
                                         const isSelected = selectedDateIndex === col;
+                                        const dateKey = formatDateKey(date);
 
-                                        // Check if any task occupies this slot to prevent button overlap
-                                        const hasTask = tasks.some(t =>
-                                            t.date === formatDateKey(date) &&
-                                            t.startHour <= hour &&
-                                            t.endHour > hour
-                                        );
+                                        // OPTIMIZATION: O(1) lookup
+                                        const hasTask = busySlots.has(`${dateKey}-${hour}`);
 
                                         return (
-                                            <motion.div
+                                            <div
                                                 key={`${col}-${hour}`}
-                                                whileHover={{ scale: 1.01 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     selectDateEverywhere(date);
                                                 }}
-                                                className={`h-14 border-l border-b transition-all duration-200 cursor-pointer relative group ${isSelected
+                                                className={`h-14 border-l border-b transition-all duration-200 cursor-pointer relative group hover:scale-[1.01] ${isSelected
                                                     ? isDark
                                                         ? "bg-indigo-950/40 border-indigo-800/30 hover:bg-indigo-900/50"
                                                         : "bg-indigo-50/50 border-indigo-200/50 hover:bg-indigo-100/50"
@@ -3046,7 +3042,7 @@ export default function Home() {
                                                         </div>
                                                     </button>
                                                 )}
-                                            </motion.div>
+                                            </div>
                                         );
                                     })}
                                 </React.Fragment>
@@ -3082,6 +3078,23 @@ export default function Home() {
         const firstDay = getFirstDayOfMonth(year, month);
         const today = new Date();
 
+        // OPTIMIZATION: One-pass task counting to avoid O(Days * Tasks) logic
+        const taskCounts: Record<string, { total: number; completed: number; }> = {};
+
+        // Only process tasks for this month
+        tasks.forEach(t => {
+            const taskDate = new Date(t.date);
+            // Quick check for matching month/year (approximate but faster)
+            if (taskDate.getMonth() === month && taskDate.getFullYear() === year) {
+                const key = t.date; // already YYYY-MM-DD
+                if (!taskCounts[key]) {
+                    taskCounts[key] = { total: 0, completed: 0 };
+                }
+                taskCounts[key].total++;
+                if (t.completed) taskCounts[key].completed++;
+            }
+        });
+
         const calendarDays: (number | null)[] = [];
         for (let i = 0; i < firstDay; i++) {
             calendarDays.push(null);
@@ -3107,15 +3120,14 @@ export default function Home() {
                             day === today.getDate() &&
                             month === today.getMonth() &&
                             year === today.getFullYear();
+
                         const date = day ? new Date(year, month, day) : null;
-                        const dayTaskCount = date
-                            ? tasks.filter((t) => t.date === formatDateKey(date)).length
-                            : 0;
-                        const completedCount = date
-                            ? tasks.filter(
-                                (t) => t.date === formatDateKey(date) && t.completed
-                            ).length
-                            : 0;
+                        const dateKey = date ? formatDateKey(date) : "";
+
+                        // OPTIMIZATION: O(1) lookup
+                        const counts = taskCounts[dateKey] || { total: 0, completed: 0 };
+                        const dayTaskCount = counts.total;
+                        const completedCount = counts.completed;
 
                         return (
                             <button
