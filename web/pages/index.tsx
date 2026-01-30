@@ -3313,7 +3313,43 @@ export default function Home() {
 
     const getUniqueLabels = () => {
         const labelMap = new Map<string, string>();
-        tasks.forEach((task) => {
+
+        const filteredTasks = tasks.filter((task) => {
+            // 1. Filter out completed tasks
+            if (task.completed) return false;
+
+            // 2. Filter by View Type
+            const taskDate = new Date(task.date);
+            // Ensure taskDate is valid
+            if (isNaN(taskDate.getTime())) return false;
+
+            if (viewType === 'day') {
+                return task.date === formatDateKey(selectedDate);
+            } else if (viewType === 'week') {
+                const weekStart = getMonday(currentDate); // Using currentDate as anchor for week view navigation
+                const weekEnd = addDays(weekStart, 7);
+                return taskDate >= weekStart && taskDate < weekEnd;
+            } else if (viewType === 'month') {
+                return (
+                    taskDate.getMonth() === currentDate.getMonth() &&
+                    taskDate.getFullYear() === currentDate.getFullYear()
+                );
+            } else if (viewType === 'season') {
+                // Approximate season logic or just show all for now to avoid complexity, 
+                // but ideally filter by 3-month window
+                const currentMonth = currentDate.getMonth();
+                const seasonStartMonth = Math.floor(currentMonth / 3) * 3;
+                const seasonStart = new Date(currentDate.getFullYear(), seasonStartMonth, 1);
+                const seasonEnd = new Date(currentDate.getFullYear(), seasonStartMonth + 3, 0);
+                return taskDate >= seasonStart && taskDate <= seasonEnd;
+            } else if (viewType === 'year') {
+                return taskDate.getFullYear() === currentDate.getFullYear();
+            }
+
+            return true;
+        });
+
+        filteredTasks.forEach((task) => {
             if (task.label && !labelMap.has(task.label)) {
                 labelMap.set(task.label, task.color);
             }
