@@ -16,6 +16,8 @@ import {
   focusState,
   fmtCountdown,
   focusFor,
+  atHour,
+  isPlanned,
 } from '../../lib/prep';
 
 const item = (id: string, start: number, end: number, date = '2026-10-12'): Item => ({
@@ -165,5 +167,48 @@ describe('focus timer', () => {
     expect(fmtCountdown(3725)).toBe('1:02:05');
     expect(fmtCountdown(90000)).toBe('1d 1h');
     expect(fmtCountdown(-5)).toBe('00:00');
+  });
+});
+
+describe('month grid size', () => {
+  // Rows needed to show a month Monday-first. Mirrors the calculation in MonthView / MiniCalendar.
+  const rows = (y: number, m: number) => {
+    const first = new Date(y, m, 1);
+    const last = new Date(y, m + 1, 0);
+    const start = mondayOf(first);
+    return Math.round((mondayOf(last).getTime() - start.getTime()) / 86400000 / 7) + 1;
+  };
+  it('is 5 or 6 rows, including months that contain a daylight-saving change', () => {
+    for (let m = 0; m < 12; m++) {
+      const r = rows(2026, m);
+      expect(r === 5 || r === 6).toBe(true);
+    }
+    expect(rows(2026, 10)).toBe(6); // Nov 2026: Oct 26 .. Dec 6
+    expect(rows(2026, 2)).toBe(6); // Mar 2026 starts on a Sunday
+    expect(rows(2026, 1)).toBe(5); // Feb 2026: Jan 26 .. Mar 1
+  });
+});
+
+describe('daylight saving', () => {
+  it('atHour lands on the wall-clock time even on a clock-change day', () => {
+    // Nov 1 2026 and Mar 8 2026 are US clock-change days; the assertion is timezone-independent
+    // because it only checks that the hour of day comes back unchanged.
+    for (const date of ['2026-11-01', '2026-03-08', '2026-10-12']) {
+      const d = new Date(atHour(date, 9));
+      expect(d.getHours()).toBe(9);
+      expect(d.getMinutes()).toBe(0);
+    }
+    expect(new Date(atHour('2026-10-12', 24)).getDate()).toBe(13); // 24 = midnight at the end of the day
+  });
+});
+
+describe('planner learns only from the user\'s own tasks', () => {
+  it('ignores tasks the planner created earlier', () => {
+    const own = item('mine', 9, 10, '2026-10-14');
+    const planned = { ...item('ai_123_0_x', 9, 10, '2026-10-14') };
+    expect(isPlanned(planned)).toBe(true);
+    expect(isPlanned(own)).toBe(false);
+    const req = buildGenerationRequest([own, planned], new Date(2026, 9, 12), DEFAULT_PREFS);
+    expect(req.week1Tasks.map((t) => t.id)).toEqual(['mine']);
   });
 });

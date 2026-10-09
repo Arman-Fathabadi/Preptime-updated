@@ -3,6 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CalendarRange, Check, Loader2, TriangleAlert, X } from 'lucide-react';
 import { cn } from './cn';
+import { useRestoreFocus } from './hooks';
 
 const STEPS = ['Reading your week', 'Finding your rhythm', 'Placing the next three weeks'];
 const MIN_ITEMS = 5;
@@ -12,6 +13,7 @@ export function PlanMonth({
   open,
   onOpenChange,
   count,
+  plannedInWeek,
   weekLabel,
   nextLabel,
   replacing,
@@ -20,6 +22,8 @@ export function PlanMonth({
   open: boolean;
   onOpenChange: (o: boolean) => void;
   count: number;
+  /** tasks in the viewed week that the planner itself created */
+  plannedInWeek: number;
   weekLabel: string;
   nextLabel: string;
   replacing: number;
@@ -30,6 +34,7 @@ export function PlanMonth({
   const [error, setError] = useState('');
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const ok = count >= MIN_ITEMS;
+  useRestoreFocus(open);
 
   useEffect(() => {
     if (!open) {
@@ -129,7 +134,9 @@ export function PlanMonth({
                   {!ok && (
                     <div className="mt-3 flex items-start gap-2 rounded-lg bg-amber-500/10 px-3 py-2.5 text-[12.5px] text-[color-mix(in_oklab,#f59e0b_70%,rgb(var(--fg)))]">
                       <TriangleAlert className="mt-px size-4 shrink-0" />
-                      Add at least {MIN_ITEMS} tasks to this week first ({count} so far). That gives us a pattern to learn from.
+                      {plannedInWeek > 0
+                        ? <>This week was planned for you, so there is nothing of yours to learn from here. Open a week you built yourself (it needs at least {MIN_ITEMS} tasks).</>
+                        : <>Add at least {MIN_ITEMS} tasks to this week first ({count} so far). That gives us a pattern to learn from.</>}
                     </div>
                   )}
                   {phase === 'error' && (

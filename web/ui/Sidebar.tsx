@@ -121,7 +121,7 @@ export function Sidebar({
                 <button
                   aria-label={t.completed ? 'Mark as not done' : 'Mark as done'}
                   onClick={() => onToggleItem(t.id)}
-                  className="grid size-4 shrink-0 place-items-center rounded-full border-[1.5px] transition"
+                  className="relative grid size-4 shrink-0 place-items-center rounded-full border-[1.5px] transition before:absolute before:-inset-2 before:content-['']"
                   style={{ borderColor: hueOf(t.color), background: t.completed ? hueOf(t.color) : 'transparent' }}
                 >
                   {t.completed && (

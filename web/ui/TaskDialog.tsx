@@ -4,6 +4,7 @@ import { CalendarDays, Check, Clock, Timer, Trash2, X } from 'lucide-react';
 import { FOCUS_PRESETS, Focus, FocusStyle, Item, PALETTE, fmtDuration, focusFor, hhmmToHour, hourToHhmm, hueOf } from '../lib/prep';
 import { Kbd } from './Kbd';
 import { Segmented } from './Segmented';
+import { useRestoreFocus } from './hooks';
 import { cn } from './cn';
 
 export type Draft = {
@@ -61,6 +62,7 @@ export function TaskDialog({
   const [d, setD] = useState<Draft | null>(draft);
   const [colorTouched, setColorTouched] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
+  useRestoreFocus(open);
 
   useEffect(() => {
     setD(draft);

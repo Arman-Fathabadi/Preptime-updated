@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 /** Current time, refreshed on an interval (drives the "now" line). */
 export function useNow(intervalMs = 30_000) {
@@ -43,4 +43,24 @@ export function useStoredState<T extends string>(key: string, initial: T) {
     }
   };
   return [value, set] as const;
+}
+
+/**
+ * Dialogs opened from a keyboard shortcut or an element have no trigger to hand focus back to, so Radix
+ * drops it on <body>. Remember what had focus when the dialog opened and put it back when it closes.
+ */
+export function useRestoreFocus(open: boolean) {
+  const prev = useRef<HTMLElement | null>(null);
+  // Layout effect: runs before the dialog moves focus into itself.
+  useLayoutEffect(() => {
+    if (open) {
+      prev.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    } else if (prev.current) {
+      const el = prev.current;
+      prev.current = null;
+      setTimeout(() => {
+        if (el.isConnected && el !== document.body) el.focus();
+      }, 0);
+    }
+  }, [open]);
 }

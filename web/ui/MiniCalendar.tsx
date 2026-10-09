@@ -20,7 +20,8 @@ export function MiniCalendar({
 
   const gridStart = mondayOf(cursor);
   const last = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0);
-  const weeks = Math.ceil(((mondayOf(last).getTime() - gridStart.getTime()) / 86400000 + 7) / 7);
+  // Round, don't ceil: a daylight-saving change makes one of these weeks 167 or 169 hours long.
+  const weeks = Math.round((mondayOf(last).getTime() - gridStart.getTime()) / 86400000 / 7) + 1;
   const days = Array.from({ length: weeks * 7 }, (_, i) => addDays(gridStart, i));
   const selMon = mondayOf(selected).getTime();
 

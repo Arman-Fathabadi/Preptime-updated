@@ -39,9 +39,10 @@ export function EventCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, delay: Math.min(index, 12) * 0.012, ease: [0.23, 1, 0.32, 1] }}
       data-event
-      role="button"
+      // A group, not role="button": the card holds a real "mark done" button, and buttons must not nest.
+      role="group"
       tabIndex={0}
-      aria-label={`${item.title}, ${fmtRange(item.startHour, item.endHour)}${item.completed ? ', completed' : ''}`}
+      aria-label={`${item.title}, ${fmtRange(item.startHour, item.endHour)}${item.completed ? ', completed' : ''}. Press Enter to edit.`}
       onClick={(e) => {
         e.stopPropagation();
         onOpen();
@@ -55,7 +56,7 @@ export function EventCard({
       onPointerDown={onPointerDown}
       style={{ ...vars, ...style }}
       className={cn(
-        'group absolute cursor-pointer overflow-hidden rounded-md border-l-[3px] text-left outline-none',
+        'group absolute cursor-pointer overflow-hidden rounded-md border-l-[3px] text-left outline-none [z-index:var(--z,1)] hover:!z-40 focus-within:!z-40',
         'bg-[color-mix(in_oklab,var(--c)_15%,rgb(var(--surface)))] border-l-[var(--c)]',
         'shadow-[0_0_0_1px_color-mix(in_oklab,var(--c)_14%,transparent)]',
         'transition-[box-shadow,background-color,opacity,transform] duration-150 ease-out',
@@ -98,7 +99,8 @@ export function EventCard({
             onToggle();
           }}
           className={cn(
-            'mt-px grid size-4 shrink-0 place-items-center rounded-full border transition',
+            // before: widens the hit area to ~28px without changing how it looks
+            'relative mt-px grid size-4 shrink-0 place-items-center rounded-full border transition before:absolute before:-inset-1.5 before:content-[""]',
             item.completed
               ? 'border-transparent bg-[var(--c)] text-white'
               : 'border-[color-mix(in_oklab,var(--c)_55%,transparent)] text-transparent opacity-0 hover:bg-[color-mix(in_oklab,var(--c)_25%,transparent)] group-hover:opacity-100 focus-visible:opacity-100'

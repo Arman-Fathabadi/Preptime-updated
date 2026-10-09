@@ -39,7 +39,8 @@ export const FOCUS_PRESETS: Record<Exclude<FocusStyle, 'custom'>, { focusMin: nu
 
 export function focusFor(style: FocusStyle, prev?: Focus): Focus {
   if (style === 'custom') return { style, focusMin: prev?.focusMin ?? 25, breakMin: prev?.breakMin ?? 5 };
-  return { style, ...FOCUS_PRESETS[style] };
+  const { focusMin, breakMin } = FOCUS_PRESETS[style];
+  return { style, focusMin, breakMin };
 }
 
 export type Prefs = {
@@ -430,9 +431,10 @@ function apiTypeOf(label: string): ApiTaskType {
 
 export function buildGenerationRequest(items: Item[], viewedMonday: Date, prefs: Prefs) {
   const weekEnd = addDays(viewedMonday, 7);
+  // Learn from the tasks the user built, never from earlier output of the planner (a plan of a plan drifts).
   const week = items.filter((t) => {
     const d = fromISODate(t.date);
-    return d >= viewedMonday && d < weekEnd;
+    return d >= viewedMonday && d < weekEnd && !isPlanned(t);
   });
 
   const week1Blocks = week.map((t) => ({
@@ -506,7 +508,9 @@ export function itemsFromGeneration(result: GenResult): Item[] {
   return out;
 }
 
-export const isPlanned = (it: Item) => it.id.startsWith('ai_');
+export function isPlanned(it: Pick<Item, 'id'>) {
+  return it.id.startsWith('ai_');
+}
 
 
 /* ------------------------------------------------------------------ */
@@ -531,7 +535,9 @@ export type FocusState =
 /** Epoch ms for a task's date at a decimal hour (24 = midnight at the end of the day). */
 export function atHour(date: string, hour: number): number {
   const d = fromISODate(date);
-  return d.getTime() + Math.round(hour * 3600) * 1000;
+  // Build from wall-clock parts, not "midnight + N ms": on a daylight-saving day the two differ by an hour.
+  const totalSec = Math.round(hour * 3600);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, totalSec).getTime();
 }
 
 export function focusState(item: Pick<Item, 'date' | 'startHour' | 'endHour' | 'focus'>, now: Date): FocusState {

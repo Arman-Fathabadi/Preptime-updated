@@ -145,7 +145,8 @@ export default function Home() {
       title: d.title,
       date: d.date,
       startHour: hhmmToHour(d.start),
-      endHour: hhmmToHour(d.end),
+      // The time input can't show 24:00, so the editor shows midnight as 23:59. Map it back.
+      endHour: d.end === '23:59' ? 24 : hhmmToHour(d.end),
       label: d.label,
       color: d.color,
       description: d.description,
@@ -170,10 +171,12 @@ export default function Home() {
 
   /* ---- planning the month ------------------------------------------ */
   const nextMonday = addDays(monday, 7);
-  const weekItems = store.items.filter((t) => {
+  const weekAll = store.items.filter((t) => {
     const d = fromISODate(t.date);
     return d >= monday && d < nextMonday;
   });
+  const weekItems = weekAll.filter((t) => !isPlanned(t)); // the pattern comes from tasks you added yourself
+  const weekPlanned = weekAll.length - weekItems.length;
   const replacing = store.items.filter((t) => isPlanned(t) && fromISODate(t.date) >= nextMonday).length;
 
   const planMonth = async () => {
@@ -222,8 +225,8 @@ export default function Home() {
         setPaletteOpen((o) => !o);
         return;
       }
-      const t = e.target as HTMLElement;
-      if (t.closest('input, textarea, select, [contenteditable], [role=dialog]') || e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as Partial<HTMLElement> | null;
+      if (t?.closest?.('input, textarea, select, [contenteditable], [role=dialog]') || e.metaKey || e.ctrlKey || e.altKey) return;
       if (dialogOpen || paletteOpen || planOpen) return;
       switch (e.key.toLowerCase()) {
         case 'n':
@@ -344,7 +347,7 @@ export default function Home() {
             </AnimatePresence>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="hidden items-center gap-1 sm:flex">
             <button onClick={() => go(new Date())} className="h-8 rounded-lg border border-border px-3 text-[13px] font-medium transition hover:bg-subtle active:scale-[0.98]">
               Today
             </button>
@@ -389,8 +392,19 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Mobile view switch */}
-        <div className="flex shrink-0 justify-center border-b border-border bg-surface py-2 sm:hidden">
+        {/* Phone: date navigation and view switch get their own row so the title has room */}
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-surface px-3 py-2 sm:hidden">
+          <div className="flex items-center gap-1">
+            <button onClick={() => step(-1)} aria-label="Previous" className="grid size-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-fg active:scale-95">
+              <ChevronLeft className="size-[18px]" />
+            </button>
+            <button onClick={() => go(new Date())} className="h-8 rounded-lg border border-border px-2.5 text-[13px] font-medium transition hover:bg-subtle active:scale-[0.98]">
+              Today
+            </button>
+            <button onClick={() => step(1)} aria-label="Next" className="grid size-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-fg active:scale-95">
+              <ChevronRight className="size-[18px]" />
+            </button>
+          </div>
           <Segmented<ViewKind> id="view-m" ariaLabel="View" value={view} onChange={setView} options={VIEWS} />
         </div>
 
@@ -457,6 +471,7 @@ export default function Home() {
         open={planOpen}
         onOpenChange={setPlanOpen}
         count={weekItems.length}
+        plannedInWeek={weekPlanned}
         weekLabel={weekTitle(monday)}
         nextLabel={nextMonday.toLocaleString('en', { weekday: 'short', month: 'short', day: 'numeric' })}
         replacing={replacing}

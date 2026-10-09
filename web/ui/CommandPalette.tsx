@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Item, fmtRange, fromISODate, hueOf, MONTHS } from '../lib/prep';
 import { Kbd } from './Kbd';
+import { useRestoreFocus } from './hooks';
 
 export type Theme = 'system' | 'light' | 'dark';
 
@@ -41,6 +42,7 @@ const itemCls =
   'group flex h-10 cursor-pointer items-center gap-3 rounded-lg px-3 text-[13.5px] text-fg outline-none data-[selected=true]:bg-subtle';
 
 export function CommandPalette({ open, onOpenChange, items, hasItems, actions }: Props) {
+  useRestoreFocus(open);
   const run = (fn: () => void) => () => {
     onOpenChange(false);
     // let the dialog close before the action opens another one
@@ -52,6 +54,14 @@ export function CommandPalette({ open, onOpenChange, items, hasItems, actions }:
       open={open}
       onOpenChange={onOpenChange}
       label="Command menu"
+      // Every typed word must appear in the item (or its keywords). cmdk's default is a loose
+      // letters-in-order match that lets "late night" match unrelated long titles.
+      filter={(value, search, keywords) => {
+        const hay = `${value} ${(keywords ?? []).join(' ')}`.toLowerCase();
+        const words = search.toLowerCase().split(/\s+/).filter(Boolean);
+        if (!words.length) return 1;
+        return words.every((w) => hay.includes(w)) ? (hay.startsWith(words[0]) ? 1 : 0.6) : 0;
+      }}
       overlayClassName="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] data-[state=open]:animate-fade-in"
       contentClassName="fixed left-1/2 top-[14vh] z-50 w-[min(580px,calc(100vw-24px))] -translate-x-1/2 overflow-hidden rounded-2xl bg-surface shadow-pop outline-none data-[state=open]:animate-pop-in"
     >

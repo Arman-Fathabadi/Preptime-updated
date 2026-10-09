@@ -273,6 +273,10 @@ export function TimeGrid({
                     const top = it.startHour * HOUR_PX;
                     const height = Math.max(len * HOUR_PX, 18) - 2;
                     const w = 100 / p.lanes;
+                    // Two overlapping tasks sit side by side. Three or more would be too narrow to read,
+                    // so they cascade instead: each later one is nudged right and drawn on top.
+                    const cascade = p.lanes > 2;
+                    const STEP = 14;
                     const isDragging = drag?.id === it.id;
                     return (
                       <EventCard
@@ -285,8 +289,9 @@ export function TimeGrid({
                         style={{
                           top: top + 1,
                           height,
-                          left: `calc(${p.lane * w}% + 2px)`,
-                          width: `calc(${w}% - 5px)`,
+                          left: cascade ? 2 + p.lane * STEP : `calc(${p.lane * w}% + 2px)`,
+                          width: cascade ? `calc(100% - ${5 + p.lane * STEP}px)` : `calc(${w}% - 5px)`,
+                          ['--z' as string]: cascade ? 10 + p.lane : 1,
                           cursor: isDragging ? 'grabbing' : 'grab',
                           touchAction: 'none',
                         }}
