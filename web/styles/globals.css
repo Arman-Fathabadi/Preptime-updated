@@ -2,11 +2,104 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ------------------------------------------------------------------ */
+/* Design tokens. Channels are space-separated RGB so Tailwind can add */
+/* alpha: bg-surface/80, border-border/60, etc.                        */
+/* ------------------------------------------------------------------ */
+:root {
+  --bg: 250 250 250;
+  --surface: 255 255 255;
+  --subtle: 244 244 245;
+  --line: 238 238 241;
+  --border: 228 228 232;
+  --fg: 10 10 11;
+  --muted: 107 107 118;
+  --faint: 154 154 165;
+  --accent: 47 107 255;
+  --accent-fg: 255 255 255;
+  --ink: 10 10 11;
+  --ink-fg: 250 250 250;
+  --danger: 229 72 77;
+  --now: 244 63 94;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: 11 11 13;
+  --surface: 18 18 21;
+  --subtle: 27 27 31;
+  --line: 29 29 34;
+  --border: 40 40 47;
+  --fg: 244 244 245;
+  --muted: 161 161 170;
+  --faint: 113 113 122;
+  --accent: 104 146 255;
+  --accent-fg: 10 10 11;
+  --ink: 244 244 245;
+  --ink-fg: 11 11 13;
+  --danger: 255 99 99;
+  --now: 251 113 133;
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-bg text-fg font-sans antialiased;
+    margin: 0;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  ::selection {
+    background: rgb(var(--accent) / 0.22);
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  button {
+    @apply select-none;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Slim, unobtrusive scrollbars in the calendar */
+  .thin-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--border)) transparent;
+  }
+  .thin-scroll::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .thin-scroll::-webkit-scrollbar-thumb {
+    background: rgb(var(--border));
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+}
+
+/* Respect reduced-motion everywhere: kill CSS animation, framer-motion handles its own. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
