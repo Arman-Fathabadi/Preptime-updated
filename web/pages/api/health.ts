@@ -1,5 +1,6 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { enforceRateLimit } from '../../utils/rateLimit';
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
 
@@ -7,6 +8,8 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
+    if (!enforceRateLimit(req, res, 'health', 30)) return;
+
     try {
         const headers: Record<string, string> = {};
         if (process.env.HF_TOKEN) {

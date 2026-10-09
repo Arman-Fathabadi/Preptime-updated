@@ -2797,14 +2797,16 @@ export default function Home() {
                             {task.completed && <span className="text-xs">✓</span>}
                             {task.title}
                         </div>
-                        {task.label && (
+                        {task.label && heightInRows >= 0.75 && (
                             <div className="text-[10px] opacity-90 truncate">
                                 {task.label}
                             </div>
                         )}
-                        <div className="text-[10px] opacity-80">
-                            {startTimeDisplay} - {endTimeDisplay}
-                        </div>
+                        {heightInRows >= 0.75 && (
+                            <div className="text-[10px] opacity-80">
+                                {startTimeDisplay} - {endTimeDisplay}
+                            </div>
+                        )}
                     </div>
                     <button
                         onClick={(e) => deleteTask(task.id, e)}
@@ -3562,6 +3564,7 @@ export default function Home() {
                             {/* AI Month Generator Button */}
                             <div className="mt-3 flex gap-3">
                                 <MonthGeneratorButton
+                                    week2Start={addDays(getMonday(currentDate), 7)}
                                     week1Blocks={blocks
                                         .filter((b) => {
                                             const blockDate = new Date(b.dateISO);

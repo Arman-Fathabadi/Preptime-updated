@@ -52,8 +52,8 @@ An intelligent task scheduling system that learns from your Week 1 schedule and 
 1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/yourusername/PrepTime.git
-cd PrepTime
+git clone https://github.com/Arman-Fathabadi/Preptime-updated.git
+cd Preptime-updated
 ```
 
 2. **Install frontend dependencies:**

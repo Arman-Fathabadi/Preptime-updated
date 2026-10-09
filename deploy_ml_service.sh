@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# NOTE: the production backend currently runs as a Hugging Face Space (Docker), not on Cloud Run.
+# Update it by uploading ml_service/ to the Space (see README "Deploying the backend").
+# This script is only for deploying the same service to Google Cloud Run instead.
+
 # Configuration
 PROJECT_ID=$(gcloud config get-value project)
 SERVICE_NAME="preptime-ml-service"

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { enforceRateLimit } from '../../utils/rateLimit';
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
 
@@ -24,6 +25,8 @@ export default async function handler(
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
+
+    if (!enforceRateLimit(req, res, 'generate-month', 6)) return;
 
     try {
         console.log(`Submitting month generation request to: ${ML_SERVICE_URL}/generate-month`);

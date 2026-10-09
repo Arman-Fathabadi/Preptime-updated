@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Task, Event, ScheduledBlock, Preferences } from '@/shared/types';
+import { nextMondayAfter, toLocalISO } from '../utils/dates';
+
+// Verbose tracing for month generation: dev builds only, so production consoles stay quiet.
+const debugLog = (...args: unknown[]) => {
+    if (process.env.NODE_ENV !== 'production') console.log(...args);
+};
 
 interface MonthGeneratorButtonProps {
     week1Blocks: ScheduledBlock[];
@@ -9,6 +15,8 @@ interface MonthGeneratorButtonProps {
     existingEvents: Event[];
     preferences: Preferences;
     onMonthGenerated: (result: GenerateMonthResult) => void;
+    /** Monday 00:00 (local) that Week 2 should start on: the week after the Week 1 being viewed. */
+    week2Start?: Date;
     disabled?: boolean;
 }
 
@@ -33,6 +41,7 @@ export default function MonthGeneratorButton({
     existingEvents,
     preferences,
     onMonthGenerated,
+    week2Start,
     disabled = false,
 }: MonthGeneratorButtonProps) {
     const [loading, setLoading] = useState(false);
@@ -72,17 +81,17 @@ export default function MonthGeneratorButton({
         }, 800);
 
         try {
-            console.log('Starting month generation...');
-            console.log('Week 1 blocks:', week1Blocks);
-            console.log('Week 1 tasks:', week1Tasks);
-            console.log('Week 1 tasks sample:', week1Tasks[0]);
-            console.log('Week 1 task colors:', week1Tasks.map(t => ({ title: t.title, color: t.color })));
+            debugLog('Starting month generation...');
+            debugLog('Week 1 blocks:', week1Blocks);
+            debugLog('Week 1 tasks:', week1Tasks);
+            debugLog('Week 1 tasks sample:', week1Tasks[0]);
+            debugLog('Week 1 task colors:', week1Tasks.map(t => ({ title: t.title, color: t.color })));
 
-            // Calculate Week 2 start date (7 days from now, or from Week 1 end)
-            const week2Start = new Date();
-            week2Start.setDate(week2Start.getDate() + 7);
+            // Week 2 starts on the Monday after the Week 1 being viewed (not "today + 7 days"),
+            // at local midnight, so the generated weeks line up with Week 1's weekdays.
+            const startDate = week2Start ?? nextMondayAfter(new Date());
 
-            console.log('Calling API with start date:', week2Start.toISOString());
+            debugLog('Calling API with start date:', toLocalISO(startDate));
 
             const response = await fetch('/api/generate-month', {
                 method: 'POST',
@@ -94,11 +103,11 @@ export default function MonthGeneratorButton({
                     week1Tasks,
                     existingEvents,
                     preferences,
-                    startDate: week2Start.toISOString(),
+                    startDate: toLocalISO(startDate),
                 }),
             });
 
-            console.log('API response status:', response.status);
+            debugLog('API response status:', response.status);
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -107,17 +116,17 @@ export default function MonthGeneratorButton({
             }
 
             const result: GenerateMonthResult = await response.json();
-            console.log('Generation result:', result);
-            console.log('Generated tasks count:', result.generatedTasks?.length);
-            console.log('Scheduled blocks count:', result.scheduledBlocks?.length);
-            console.log('Sample generated task:', result.generatedTasks?.[0]);
-            console.log('Sample scheduled block:', result.scheduledBlocks?.[0]);
+            debugLog('Generation result:', result);
+            debugLog('Generated tasks count:', result.generatedTasks?.length);
+            debugLog('Scheduled blocks count:', result.scheduledBlocks?.length);
+            debugLog('Sample generated task:', result.generatedTasks?.[0]);
+            debugLog('Sample scheduled block:', result.scheduledBlocks?.[0]);
 
             // Calculate remaining time to show loading animation
             const elapsedTime = Date.now() - startTime;
             const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
 
-            console.log(`API took ${elapsedTime}ms, waiting ${remainingTime}ms more for animation`);
+            debugLog(`API took ${elapsedTime}ms, waiting ${remainingTime}ms more for animation`);
 
             // Wait for minimum display time before clearing
             setTimeout(() => {
@@ -126,7 +135,7 @@ export default function MonthGeneratorButton({
                 // Auto-apply the generated schedule
                 onMonthGenerated(result);
 
-                console.log('Successfully applied generated schedule');
+                debugLog('Successfully applied generated schedule');
 
                 // Brief delay before hiding loading screen
                 setTimeout(() => {
