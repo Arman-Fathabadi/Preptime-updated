@@ -14,6 +14,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { Task, Event, Preferences } from '@shared/types';
 
+// Python used to cross-validate against the Pydantic models (needs pydantic installed).
+// Override with PYTHON=/path/to/venv/bin/python; macOS has python3 but no `python`.
+const PYTHON = process.env.PYTHON || 'python3';
+
 // Arbitrary generators for TypeScript types
 const taskArbitrary = fc.record({
   id: fc.uuid(),
@@ -77,7 +81,7 @@ except Exception as e:
     fs.writeFileSync(tempPyFile, pythonScript);
     
     // Execute Python script
-    const result = execSync(`python "${tempPyFile}"`, {
+    const result = execSync(`${PYTHON} "${tempPyFile}"`, {
       encoding: 'utf-8',
       cwd: path.resolve(__dirname, '../../..'),
     });
@@ -150,7 +154,7 @@ print(json.dumps(obj.model_dump(by_alias=True)))
     
     fs.writeFileSync(tempPyFile, pythonScript);
     
-    const result = execSync(`python "${tempPyFile}"`, {
+    const result = execSync(`${PYTHON} "${tempPyFile}"`, {
       encoding: 'utf-8',
       cwd: path.resolve(__dirname, '../../..'),
     });

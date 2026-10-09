@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from ml_service.scheduler import validate_placement, Slot
+from ml_service.scheduler import validate_placement, find_placement, Slot
 from shared.models import Task, ScheduledBlock
 
 
@@ -181,37 +181,39 @@ def test_property_12_no_overlapping_scheduled_blocks(task, slot, scheduled_block
 # Property 13: Time window constraint validation
 @settings(max_examples=100)
 @given(
-    task=task_strategy(with_window=True),
+    task=task_strategy(with_window=True, with_deadline=False),
     slot=slot_strategy()
 )
 def test_property_13_time_window_constraint_validation(task, slot):
     """
     Feature: intelligent-scheduler, Property 13: Time window constraint validation
-    
-    For any task with a time window constraint, all placements of that task should
-    fall within the specified start and end hours.
-    
+
+    For any task with a time window constraint, every accepted placement falls
+    inside the window, and a slot with no room for the task inside the window is
+    rejected. A slot that merely starts before the window opens is still usable:
+    the task is placed at the window start.
+
     Validates: Requirements 5.3
     """
     is_valid, error_msg = validate_placement(task, slot, [])
-    
-    if task.window is not None:
-        slot_start_hour = slot.start.hour + slot.start.minute / 60.0
-        slot_end_hour = slot.end.hour + slot.end.minute / 60.0
-        
-        window_start = task.window.get('startHour', 0)
-        window_end = task.window.get('endHour', 24)
-        
-        within_window = (slot_start_hour >= window_start and slot_end_hour <= window_end)
-        
-        # Only check window constraint if duration constraint is satisfied
-        duration_ok = slot.duration_min >= task.duration_min
-        
-        if not within_window and duration_ok:
-            # Should be rejected due to window constraint
-            assert not is_valid, f"Placement should be rejected when slot ({slot_start_hour:.1f}-{slot_end_hour:.1f}) is outside window ({window_start}-{window_end})"
-            assert error_msg is not None, "Error message should be provided for window violation"
-            assert "window" in error_msg.lower(), "Error message should mention window"
+    placement, _ = find_placement(task, slot)
+
+    day = slot.start.replace(hour=0, minute=0, second=0, microsecond=0)
+    window_start = day + timedelta(hours=task.window.get('startHour', 0))
+    window_end = day + timedelta(hours=task.window.get('endHour', 24))
+    lo = max(slot.start, window_start)
+    hi = min(slot.end, window_end)
+    fits = lo + timedelta(minutes=task.duration_min) <= hi
+    duration_ok = slot.duration_min >= task.duration_min
+
+    if duration_ok:
+        assert is_valid == fits, f"window check disagrees with geometry: valid={is_valid}, fits={fits}"
+    if is_valid:
+        start, end = placement
+        assert slot.start <= start and end <= slot.end
+        assert start >= window_start and end <= window_end
+    elif duration_ok:
+        assert error_msg is not None and "window" in error_msg.lower()
 
 
 # Property 14: Deadline constraint validation
@@ -223,25 +225,26 @@ def test_property_13_time_window_constraint_validation(task, slot):
 def test_property_14_deadline_constraint_validation(task, slot):
     """
     Feature: intelligent-scheduler, Property 14: Deadline constraint validation
-    
-    For any task with a deadline, all placements of that task should have
-    end times before the deadline.
-    
+
+    For any task with a deadline, every accepted placement ends at or before the
+    deadline. A slot that extends past the deadline is still usable when the task
+    fits in the part of it before the deadline.
+
     Validates: Requirements 5.4
     """
     is_valid, error_msg = validate_placement(task, slot, [])
-    
-    if task.due_at is not None:
-        deadline = datetime.fromisoformat(task.due_at.replace('Z', '+00:00'))
-        
-        # Only check deadline constraint if duration constraint is satisfied
-        duration_ok = slot.duration_min >= task.duration_min
-        
-        if slot.end > deadline and duration_ok:
-            # Should be rejected due to deadline constraint
-            assert not is_valid, f"Placement should be rejected when slot ends ({slot.end}) after deadline ({deadline})"
-            assert error_msg is not None, "Error message should be provided for deadline violation"
-            assert "deadline" in error_msg.lower(), "Error message should mention deadline"
+    deadline = datetime.fromisoformat(task.due_at.replace('Z', '+00:00'))
+
+    duration_ok = slot.duration_min >= task.duration_min
+    fits = slot.start + timedelta(minutes=task.duration_min) <= min(slot.end, deadline)
+
+    if duration_ok:
+        assert is_valid == fits, f"deadline check disagrees with geometry: valid={is_valid}, fits={fits}"
+    if is_valid:
+        placement, _ = find_placement(task, slot)
+        assert placement[1] <= deadline
+    elif duration_ok:
+        assert error_msg is not None and "deadline" in error_msg.lower()
 
 
 # Property 15: State preservation on invalid placement

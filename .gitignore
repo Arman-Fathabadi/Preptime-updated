@@ -42,3 +42,8 @@ dist/
 
 # Project specific
 ml_service/model/
+
+# Test/tool leftovers
+ml_service/.hypothesis/
+web/tests/property/temp_*
+*.tsbuildinfo

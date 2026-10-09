@@ -40,58 +40,66 @@ def generate_free_slots(
         List of Slot objects representing available time slots
     """
     start_date, end_date = date_range
-    slot_step_min = preferences.slot_step_min
+    slot_step_min = max(1, preferences.slot_step_min)
+    buffer = timedelta(minutes=max(0, preferences.buffer_min))
     day_start_hour = preferences.day_start_hour
     day_end_hour = preferences.day_end_hour
-    
+
     # Parse events and sort by start time
     parsed_events = []
     for event in events:
         event_start = datetime.fromisoformat(event.start.replace('Z', '+00:00'))
         event_end = datetime.fromisoformat(event.end.replace('Z', '+00:00'))
         parsed_events.append((event_start, event_end))
-    
+
     # Sort events by start time
     parsed_events.sort(key=lambda x: x[0])
-    
+
     slots = []
-    
-    # Iterate through each day in the date range
+
+    # Iterate through each day in the date range. The range is [start, end):
+    # a day that begins at or after `end` is never visited.
     current_day = start_date.replace(hour=0, minute=0, second=0, microsecond=0)
-    
-    while current_day <= end_date:
-        # Define day boundaries
-        day_start = current_day.replace(hour=day_start_hour, minute=0, second=0, microsecond=0)
-        day_end = current_day.replace(hour=day_end_hour, minute=0, second=0, microsecond=0)
-        
-        # Get events for this day
-        day_events = [
+
+    while current_day < end_date:
+        # Define day boundaries, clamped to the requested date range so no slot
+        # starts before `start` or runs past `end`.
+        day_start = max(current_day.replace(hour=day_start_hour, minute=0, second=0, microsecond=0), start_date)
+        day_end = min(current_day.replace(hour=day_end_hour, minute=0, second=0, microsecond=0), end_date)
+
+        if day_start >= day_end:
+            current_day += timedelta(days=1)
+            continue
+
+        # Events overlapping this window (merged so adjacent/overlapping ones act as one)
+        day_events = sorted(
             (max(e_start, day_start), min(e_end, day_end))
             for e_start, e_end in parsed_events
             if e_start < day_end and e_end > day_start
-        ]
-        
-        # Sort day events by start time
-        day_events.sort(key=lambda x: x[0])
-        
-        # Find gaps between events
+        )
+
+        # Find gaps between events, leaving `buffer` of breathing room on each
+        # side of an event (but not against the day boundary itself).
         gaps = []
         current_time = day_start
-        
         for event_start, event_end in day_events:
-            if current_time < event_start:
-                # There's a gap before this event
-                gaps.append((current_time, event_start))
-            # Move current_time to the end of this event
-            current_time = max(current_time, event_end)
-        
-        # Check if there's a gap after the last event
+            gap_end = event_start - buffer
+            if current_time < gap_end:
+                gaps.append((current_time, gap_end))
+            current_time = max(current_time, event_end + buffer)
+
         if current_time < day_end:
             gaps.append((current_time, day_end))
-        
-        # Create slots from gaps (merge consecutive time into single large slots)
+
+        midnight = current_day.replace(hour=0, minute=0, second=0, microsecond=0)
+        step = timedelta(minutes=slot_step_min)
         for gap_start, gap_end in gaps:
-            # Create one large slot for the entire gap
+            # Align the slot start up to the next slotStepMin boundary of the day.
+            since_midnight = gap_start - midnight
+            remainder = since_midnight % step
+            if remainder:
+                gap_start += step - remainder
+
             duration_min = int((gap_end - gap_start).total_seconds() / 60)
             if duration_min > 0:
                 slots.append(Slot(
@@ -99,11 +107,39 @@ def generate_free_slots(
                     end=gap_end,
                     duration_min=duration_min
                 ))
-        
-        # Move to next day
+
         current_day += timedelta(days=1)
-    
+
     return slots
+
+
+def find_placement(task: Task, slot: Slot):
+    """Where inside `slot` could `task` actually run?
+
+    Returns ((start, end), None) for the earliest feasible placement, or
+    (None, reason) when none exists. The task's time window and deadline limit
+    where within the slot it may sit - they do not disqualify a slot that merely
+    starts before the window opens or extends past the deadline.
+    """
+    lo, hi = slot.start, slot.end
+    duration = timedelta(minutes=task.duration_min)
+
+    if task.window is not None:
+        day = slot.start.replace(hour=0, minute=0, second=0, microsecond=0)
+        window_start = task.window.get('startHour', 0)
+        window_end = task.window.get('endHour', 24)
+        lo = max(lo, day + timedelta(hours=window_start))
+        hi = min(hi, day + timedelta(hours=window_end))
+        if lo + duration > hi:
+            return None, f"Task does not fit inside its time window ({window_start}-{window_end}) in this slot"
+
+    if task.due_at is not None:
+        deadline = datetime.fromisoformat(task.due_at.replace('Z', '+00:00'))
+        hi = min(hi, deadline)
+        if lo + duration > hi:
+            return None, f"Task cannot finish before its deadline ({task.due_at}) in this slot"
+
+    return (lo, lo + duration), None
 
 
 def validate_placement(
@@ -117,8 +153,8 @@ def validate_placement(
     Checks:
     1. Slot duration >= task duration
     2. No overlap with existing scheduled blocks
-    3. Slot within task time window (if specified)
-    4. Slot end before task deadline (if specified)
+    3. A placement inside the slot that respects the task's time window
+    4. ...and finishes before the task's deadline
     
     Args:
         task: The task to be placed
@@ -143,26 +179,12 @@ def validate_placement(
         if slot.start < block_end and slot.end > block_start:
             return (False, f"Slot overlaps with existing scheduled block {block.id}")
     
-    # Check 3: Slot within task time window (if specified)
-    if task.window is not None:
-        # Calculate where the task would actually be placed
-        task_start_hour = slot.start.hour + slot.start.minute / 60.0
-        task_end_hour = task_start_hour + (task.duration_min / 60.0)
-        
-        window_start = task.window.get('startHour', 0)
-        window_end = task.window.get('endHour', 24)
-        
-        # Check if task placement fits within window
-        if task_start_hour < window_start or task_end_hour > window_end:
-            return (False, f"Task placement ({task_start_hour:.1f}-{task_end_hour:.1f}) is outside time window ({window_start}-{window_end})")
-    
-    # Check 4: Slot end before task deadline (if specified)
-    if task.due_at is not None:
-        deadline = datetime.fromisoformat(task.due_at.replace('Z', '+00:00'))
-        
-        if slot.end > deadline:
-            return (False, f"Slot ends after task deadline ({task.due_at})")
-    
+    # Checks 3 and 4: time window and deadline, evaluated on where the task
+    # would actually be placed inside the slot (see find_placement).
+    placement, reason = find_placement(task, slot)
+    if placement is None:
+        return (False, reason)
+
     # All checks passed
     return (True, None)
 
@@ -170,97 +192,100 @@ def validate_placement(
 def greedy_schedule(
     tasks: list[Task],
     slots: list[Slot],
-    scorer
+    scorer,
+    max_heavy_per_day: Optional[int] = None,
 ) -> dict:
     """
     Place tasks using greedy algorithm.
-    
+
     Algorithm:
     1. For each task, score all valid slots
     2. Sort task-slot pairs by score (descending)
-    3. Place highest scoring pair
-    4. Update available slots (remove or split used slot)
+    3. Place highest scoring pair, at the earliest start the task's window and
+       deadline allow inside that slot
+    4. Update available slots (remove the used slot, keep what is left before
+       and after the placement)
     5. Repeat until all tasks placed or no valid slots
     6. Track unscheduled tasks
-    
+
     Args:
         tasks: List of tasks to schedule
         slots: List of available time slots
         scorer: SlotScorer instance for scoring task-slot pairs
-    
+        max_heavy_per_day: If set (> 0), at most this many high-energy tasks
+            are placed on any one calendar day. None / 0 means no cap.
+
     Returns:
         Dictionary with:
         - scheduledBlocks: List of ScheduledBlock objects
         - unscheduledTasks: List of task IDs that couldn't be scheduled
     """
     from ml_service.scorer import SchedulingContext
-    
+
     scheduled_blocks = []
     unscheduled_tasks = []
     available_slots = slots.copy()
     remaining_tasks = tasks.copy()
-    
+    heavy_by_day: dict = {}
+    heavy_cap = max_heavy_per_day if max_heavy_per_day and max_heavy_per_day > 0 else None
+
     # Create a simple context (can be enhanced later)
     context = SchedulingContext()
-    
+
     while remaining_tasks and available_slots:
         # Score all valid task-slot pairs
         scored_pairs = []
-        
+
         for task in remaining_tasks:
+            is_heavy = task.energy == "high"
             for slot in available_slots:
+                if heavy_cap is not None and is_heavy and heavy_by_day.get(slot.start.date(), 0) >= heavy_cap:
+                    continue
+
                 # Check if placement is valid
                 is_valid, _ = validate_placement(task, slot, scheduled_blocks)
-                
+
                 if is_valid:
                     # Score this task-slot pair
                     score = scorer.score(task, slot, context)
                     scored_pairs.append((score, task, slot))
-        
+
         # If no valid placements, break
         if not scored_pairs:
             break
-        
+
         # Sort by score (descending)
         scored_pairs.sort(key=lambda x: x[0], reverse=True)
-        
+
         # Place the highest scoring pair
         best_score, best_task, best_slot = scored_pairs[0]
-        
-        # Create scheduled block
+        (task_start, task_end), _ = find_placement(best_task, best_slot)
+
         block_id = f"block_{len(scheduled_blocks) + 1}"
-        scheduled_block = ScheduledBlock(
+        scheduled_blocks.append(ScheduledBlock(
             id=block_id,
             taskId=best_task.id,
-            start=best_slot.start.isoformat(),
-            end=(best_slot.start + timedelta(minutes=best_task.duration_min)).isoformat()
-        )
-        
-        scheduled_blocks.append(scheduled_block)
-        
-        # Remove task from remaining tasks
+            start=task_start.isoformat(),
+            end=task_end.isoformat()
+        ))
+
+        if best_task.energy == "high":
+            day = best_slot.start.date()
+            heavy_by_day[day] = heavy_by_day.get(day, 0) + 1
+
         remaining_tasks.remove(best_task)
-        
-        # Update available slots
-        # Remove the used slot and potentially create new slots from remaining time
+
+        # Remove the used slot, keeping any free time before and after the task
         available_slots.remove(best_slot)
-        
-        # If the task doesn't use the entire slot, create a new slot for the remaining time
-        task_end = best_slot.start + timedelta(minutes=best_task.duration_min)
-        if task_end < best_slot.end:
-            remaining_duration = int((best_slot.end - task_end).total_seconds() / 60)
-            if remaining_duration > 0:
-                new_slot = Slot(
-                    start=task_end,
-                    end=best_slot.end,
-                    duration_min=remaining_duration
-                )
-                available_slots.append(new_slot)
-    
+        for free_start, free_end in ((best_slot.start, task_start), (task_end, best_slot.end)):
+            free_min = int((free_end - free_start).total_seconds() / 60)
+            if free_min > 0:
+                available_slots.append(Slot(start=free_start, end=free_end, duration_min=free_min))
+
     # Track unscheduled tasks
     for task in remaining_tasks:
         unscheduled_tasks.append(task.id)
-    
+
     return {
         "scheduledBlocks": scheduled_blocks,
         "unscheduledTasks": unscheduled_tasks

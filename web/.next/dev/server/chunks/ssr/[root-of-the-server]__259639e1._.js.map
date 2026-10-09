@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///Users/armanfathabadi/Downloads/private-project/Preptime-private/web/pages/_app.tsx"],"sourcesContent":["import type { AppProps } from 'next/app';\nimport { SessionProvider } from \"next-auth/react\";\nimport '../styles/globals.css';\n\nexport default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {\n    return (\n        <SessionProvider session={session}>\n            <Component {...pageProps} />\n        </SessionProvider>\n    );\n}\n"],"names":[],"mappings":";;;;;AACA;;;;AAGe,SAAS,IAAI,EAAE,SAAS,EAAE,WAAW,EAAE,OAAO,EAAE,GAAG,WAAW,EAAY;IACrF,qBACI,qKAAC,0QAAe;QAAC,SAAS;kBACtB,cAAA,qKAAC;YAAW,GAAG,SAAS;;;;;;;;;;;AAGpC"}}]
-}

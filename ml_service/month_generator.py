@@ -397,7 +397,8 @@ class MonthGenerator:
         schedule = greedy_schedule(
             tasks=tasks_with_breaks,
             slots=slots,
-            scorer=self.scorer
+            scorer=self.scorer,
+            max_heavy_per_day=preferences.max_heavy_per_day
         )
         
         print(f"[DEBUG] Scheduled {len(schedule['scheduledBlocks'])} out of {len(tasks_with_breaks)} tasks")

@@ -122,7 +122,8 @@ async def create_schedule(request: ScheduleRequest):
         schedule_result = greedy_schedule(
             tasks=request.tasks,
             slots=slots,
-            scorer=scorer
+            scorer=scorer,
+            max_heavy_per_day=request.preferences.max_heavy_per_day
         )
         
         # Generate explanations

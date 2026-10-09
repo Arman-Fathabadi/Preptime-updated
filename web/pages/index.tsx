@@ -266,11 +266,18 @@ function normalizeHour24(hour: any): number {
 }
 
 function formatHour(h: number): string {
-    const hour = Math.floor(h);
-    if (hour === 0 || hour === 24) return "12 AM";
-    if (hour === 12) return "12 PM";
-    if (hour > 12) return `${hour - 12} PM`;
-    return `${hour} AM`;
+    // Round to the nearest minute first so 8.5 -> "8:30 AM" and 7.9999 -> "8 AM".
+    const totalMin = Math.round(h * 60);
+    const hour = Math.floor(totalMin / 60);
+    const min = totalMin % 60;
+    const suffix = hour % 24 >= 12 ? "PM" : "AM";
+    const h12 = hour % 12 === 0 ? 12 : hour % 12;
+    return min === 0 ? `${h12} ${suffix}` : `${h12}:${String(min).padStart(2, "0")} ${suffix}`;
+}
+
+// Verbose tracing for month generation: dev builds only, so production consoles stay quiet.
+function debugLog(...args: unknown[]) {
+    if (process.env.NODE_ENV !== "production") console.log(...args);
 }
 
 function getMonday(date: Date): Date {
@@ -3686,7 +3693,7 @@ export default function Home() {
                                         maxHeavyPerDay: 3,
                                     }}
                                     onMonthGenerated={(result) => {
-                                        console.log("onMonthGenerated called with result:", result);
+                                        debugLog("onMonthGenerated called with result:", result);
 
                                         // Convert generated blocks back to TimeBlock format and add them
                                         const newBlocks = result.scheduledBlocks.map(
@@ -3757,7 +3764,7 @@ export default function Home() {
                                             }
                                         );
 
-                                        console.log("Created newBlocks:", newBlocks);
+                                        debugLog("Created newBlocks:", newBlocks);
 
                                         // Also create Task objects for the calendar
                                         const newTasks = result.scheduledBlocks
@@ -3789,10 +3796,10 @@ export default function Home() {
 
                                                 // Debug: Log task color
                                                 if (index === 0) {
-                                                    console.log("First AI task:", task);
-                                                    console.log("Task color:", task?.color);
-                                                    console.log("Task label:", task?.label);
-                                                    console.log("Task title:", task?.title);
+                                                    debugLog("First AI task:", task);
+                                                    debugLog("Task color:", task?.color);
+                                                    debugLog("Task label:", task?.label);
+                                                    debugLog("Task title:", task?.title);
                                                 }
 
                                                 // Use color from AI if available
@@ -3830,11 +3837,11 @@ export default function Home() {
                                                         "#D291BC",
                                                     ];
                                                     color = colors[Math.abs(hash) % colors.length];
-                                                    console.log(
+                                                    debugLog(
                                                         `Generated color for ${baseName}: ${color}`
                                                     );
                                                 } else {
-                                                    console.log(
+                                                    debugLog(
                                                         `Using AI color for ${task?.title}: ${color}`
                                                     );
                                                 }
@@ -3861,17 +3868,17 @@ export default function Home() {
                                             })
                                             .filter((t) => t !== null);
 
-                                        console.log("Created newTasks:", newTasks);
-                                        console.log("Sample task:", newTasks[0]);
+                                        debugLog("Created newTasks:", newTasks);
+                                        debugLog("Sample task:", newTasks[0]);
 
                                         const updatedTasks = [...tasks, ...newTasks];
                                         const updatedBlocks = [...blocks, ...newBlocks];
 
-                                        console.log(
+                                        debugLog(
                                             "Total tasks after generation:",
                                             updatedTasks.length
                                         );
-                                        console.log(
+                                        debugLog(
                                             "Total blocks after generation:",
                                             updatedBlocks.length
                                         );
