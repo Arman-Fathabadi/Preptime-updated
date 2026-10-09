@@ -12,6 +12,7 @@ export function EventCard({
   style,
   compact,
   dragging,
+  active,
   onOpen,
   onToggle,
   onPointerDown,
@@ -22,6 +23,7 @@ export function EventCard({
   style: React.CSSProperties;
   compact: boolean;
   dragging?: boolean;
+  active?: boolean;
   onOpen: () => void;
   onToggle: () => void;
   onPointerDown?: (e: React.PointerEvent) => void;
@@ -60,6 +62,7 @@ export function EventCard({
         'hover:bg-[color-mix(in_oklab,var(--c)_22%,rgb(var(--surface)))] hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--c)_30%,transparent),0_4px_14px_-4px_color-mix(in_oklab,var(--c)_35%,transparent)]',
         'focus-visible:ring-2 focus-visible:ring-accent',
         item.completed && 'opacity-55',
+        active && 'ring-2 ring-accent/70',
         dragging && 'z-30 scale-[1.01] shadow-pop'
       )}
     >

@@ -56,7 +56,7 @@ export function MiniCalendar({
               key={d.toISOString()}
               onClick={() => onSelect(d)}
               className={cn(
-                'relative grid h-8 place-items-center text-[12px] tabular transition-colors',
+                'relative grid h-7 place-items-center text-[12px] tabular transition-colors',
                 inWeek && 'bg-accent/8',
                 inWeek && d.getDay() === 1 && 'rounded-l-lg',
                 inWeek && d.getDay() === 0 && 'rounded-r-lg',
@@ -65,7 +65,7 @@ export function MiniCalendar({
             >
               <span
                 className={cn(
-                  'grid size-7 place-items-center rounded-full font-medium transition-colors',
+                  'grid size-6 place-items-center rounded-full font-medium transition-colors',
                   today && !isSel && 'text-accent',
                   isSel ? 'bg-accent text-accent-fg' : 'hover:bg-subtle'
                 )}

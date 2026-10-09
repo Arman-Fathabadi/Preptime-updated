@@ -1,5 +1,6 @@
-import { LogOut, Monitor, Moon, Sun } from 'lucide-react';
-import { Item, MONTHS, fmtHour, hueOf, isToday } from '../lib/prep';
+import { LogOut, Monitor, Moon, Pencil, Sun } from 'lucide-react';
+import { Focus, Item, MONTHS, fmtHour, hueOf, isToday } from '../lib/prep';
+import { FocusPanel } from './FocusPanel';
 import { MiniCalendar } from './MiniCalendar';
 import { Segmented } from './Segmented';
 import { Theme } from './CommandPalette';
@@ -16,8 +17,6 @@ export function Logo({ className }: { className?: string }) {
   );
 }
 
-const greeting = (d: Date) => (d.getHours() < 12 ? 'Good morning' : d.getHours() < 18 ? 'Good afternoon' : 'Good evening');
-
 export function Sidebar({
   username,
   now,
@@ -30,6 +29,14 @@ export function Sidebar({
   onOpenItem,
   onToggleItem,
   onSignOut,
+  focusItem,
+  focusAuto,
+  upNext,
+  activeId,
+  onSelect,
+  onClearActive,
+  onChangeFocus,
+  onMarkDone,
 }: {
   username: string | null;
   now: Date | null;
@@ -42,6 +49,14 @@ export function Sidebar({
   onOpenItem: (it: Item) => void;
   onToggleItem: (id: string) => void;
   onSignOut: () => void;
+  focusItem: Item | null;
+  focusAuto: boolean;
+  upNext: Item | null;
+  activeId: string | null;
+  onSelect: (id: string) => void;
+  onClearActive: () => void;
+  onChangeFocus: (focus: Focus | undefined) => void;
+  onMarkDone: () => void;
 }) {
   const nowH = now ? now.getHours() + now.getMinutes() / 60 : -1;
   const today = isToday(selected);
@@ -61,7 +76,11 @@ export function Sidebar({
         <MiniCalendar selected={selected} byDate={byDate} onSelect={onSelectDate} />
       </div>
 
-      <div className="mx-5 my-4 h-px bg-line" />
+      <div className="px-4 pb-1 pt-3">
+        <FocusPanel item={focusItem} auto={focusAuto} upNext={upNext} onClear={onClearActive} onChangeFocus={onChangeFocus} onMarkDone={onMarkDone} />
+      </div>
+
+      <div className="mx-5 my-3 h-px bg-line" />
 
       {/* Agenda */}
       <div className="flex min-h-0 flex-1 flex-col px-4">
@@ -89,8 +108,16 @@ export function Sidebar({
           {dayItems.map((t) => {
             const isNow = current?.id === t.id;
             const isNext = next?.id === t.id;
+            const selected = activeId === t.id;
             return (
-              <div key={t.id} className={cn('group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-subtle', isNow && 'bg-accent/8')}>
+              <div
+                key={t.id}
+                className={cn(
+                  'group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-subtle',
+                  isNow && !selected && 'bg-accent/8',
+                  selected && 'bg-subtle ring-1 ring-accent/50'
+                )}
+              >
                 <button
                   aria-label={t.completed ? 'Mark as not done' : 'Mark as done'}
                   onClick={() => onToggleItem(t.id)}
@@ -103,7 +130,7 @@ export function Sidebar({
                     </svg>
                   )}
                 </button>
-                <button onClick={() => onOpenItem(t)} className="min-w-0 flex-1 text-left">
+                <button onClick={() => onSelect(t.id)} title="Show the focus timer for this task" className="min-w-0 flex-1 text-left">
                   <div className={cn('truncate text-[13px] font-medium', t.completed && 'text-faint line-through')}>{t.title}</div>
                   <div className="tabular font-mono text-[10.5px] text-muted">{fmtHour(t.startHour)}</div>
                 </button>
@@ -112,6 +139,13 @@ export function Sidebar({
                     {isNow ? 'Now' : 'Next'}
                   </span>
                 )}
+                <button
+                  aria-label="Edit task"
+                  onClick={() => onOpenItem(t)}
+                  className="grid size-6 shrink-0 place-items-center rounded-md text-faint opacity-0 transition hover:bg-border/60 hover:text-fg focus-visible:opacity-100 group-hover:opacity-100"
+                >
+                  <Pencil className="size-3.5" />
+                </button>
               </div>
             );
           })}
@@ -119,32 +153,24 @@ export function Sidebar({
       </div>
 
       {/* Footer */}
-      <div className="space-y-3 border-t border-line p-4">
-        <div className="flex items-center justify-between">
-          <span className="text-[12px] text-muted">Appearance</span>
-          <Segmented<Theme>
-            id="theme"
-            size="sm"
-            ariaLabel="Theme"
-            value={theme}
-            onChange={onTheme}
-            options={[
-              { value: 'light', label: <Sun className="size-3.5" />, title: 'Light' },
-              { value: 'dark', label: <Moon className="size-3.5" />, title: 'Dark' },
-              { value: 'system', label: <Monitor className="size-3.5" />, title: 'Match system' },
-            ]}
-          />
-        </div>
-        <div className="flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-full bg-subtle text-[12px] font-semibold uppercase">{(username ?? '?').slice(0, 1)}</span>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[13px] font-medium">{username ?? 'Guest'}</div>
-            <div className="text-[11.5px] text-muted">{now ? greeting(now) : ''}</div>
-          </div>
-          <button onClick={onSignOut} aria-label="Switch user" title="Switch user" className="grid size-8 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-fg">
-            <LogOut className="size-4" />
-          </button>
-        </div>
+      <div className="flex items-center gap-2 border-t border-line p-3">
+        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-subtle text-[12px] font-semibold uppercase">{(username ?? '?').slice(0, 1)}</span>
+        <div className="min-w-0 flex-1 truncate text-[13px] font-medium">{username ?? 'Guest'}</div>
+        <Segmented<Theme>
+          id="theme"
+          size="sm"
+          ariaLabel="Theme"
+          value={theme}
+          onChange={onTheme}
+          options={[
+            { value: 'light', label: <Sun className="size-3.5" />, title: 'Light' },
+            { value: 'dark', label: <Moon className="size-3.5" />, title: 'Dark' },
+            { value: 'system', label: <Monitor className="size-3.5" />, title: 'Match system' },
+          ]}
+        />
+        <button onClick={onSignOut} aria-label="Switch user" title="Switch user" className="grid size-8 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-fg">
+          <LogOut className="size-4" />
+        </button>
       </div>
     </aside>
   );

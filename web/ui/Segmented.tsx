@@ -11,6 +11,7 @@ export function Segmented<T extends string>({
   id,
   size = 'md',
   ariaLabel,
+  fullWidth,
 }: {
   value: T;
   onChange: (v: T) => void;
@@ -18,12 +19,13 @@ export function Segmented<T extends string>({
   id: string;
   size?: 'sm' | 'md';
   ariaLabel?: string;
+  fullWidth?: boolean;
 }) {
   return (
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className={cn('relative inline-flex items-center rounded-lg bg-subtle p-0.5', size === 'sm' ? 'h-7' : 'h-8')}
+      className={cn('relative items-center rounded-lg bg-subtle p-0.5', fullWidth ? 'flex w-full' : 'inline-flex', size === 'sm' ? 'h-7' : 'h-8')}
     >
       {options.map((o) => {
         const active = o.value === value;
@@ -37,6 +39,7 @@ export function Segmented<T extends string>({
             className={cn(
               'relative z-10 flex h-full items-center justify-center rounded-md px-3 text-[13px] font-medium transition-colors',
               size === 'sm' && 'px-2',
+              fullWidth && 'min-w-0 flex-1 px-0.5 text-[12px]',
               active ? 'text-fg' : 'text-muted hover:text-fg'
             )}
           >

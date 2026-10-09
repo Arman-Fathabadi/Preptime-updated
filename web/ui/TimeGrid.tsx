@@ -42,6 +42,7 @@ export function TimeGrid({
   onToggle,
   onChange,
   onPickDay,
+  activeId,
 }: {
   dates: Date[];
   byDate: Map<string, Item[]>;
@@ -52,6 +53,7 @@ export function TimeGrid({
   onToggle: (id: string) => void;
   onChange: (id: string, patch: Partial<Item>) => void;
   onPickDay?: (d: Date) => void;
+  activeId?: string | null;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const colsRef = useRef<HTMLDivElement>(null);
@@ -279,6 +281,7 @@ export function TimeGrid({
                         index={i}
                         compact={compact}
                         dragging={isDragging && drag?.moved}
+                        active={activeId === it.id}
                         style={{
                           top: top + 1,
                           height,

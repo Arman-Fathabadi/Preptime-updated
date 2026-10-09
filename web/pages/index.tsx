@@ -17,6 +17,7 @@ import {
   isPlanned,
   itemsFromGeneration,
   mondayOf,
+  isToday,
   startOfDay,
   toISODate,
   usePrepStore,
@@ -75,6 +76,12 @@ export default function Home() {
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store.loaded, store.username]);
+
+  // Forget a picked task that no longer exists.
+  useEffect(() => {
+    if (store.loaded && store.activeId && !store.items.some((t) => t.id === store.activeId)) store.setActiveId(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.loaded, store.activeId, store.items]);
 
   /* ---- theme -------------------------------------------------------- */
   useEffect(() => {
@@ -142,6 +149,7 @@ export default function Home() {
       label: d.label,
       color: d.color,
       description: d.description,
+      focus: d.focus,
     };
     if (d.id) store.update(d.id, patch);
     else store.add(patch);
@@ -256,6 +264,14 @@ export default function Home() {
 
   /* ---- render ------------------------------------------------------- */
   const dayItems = store.byDate.get(toISODate(cursor)) ?? [];
+
+  // Focus timer target: the task you picked, otherwise whatever is happening right now.
+  const nowH = now ? now.getHours() + now.getMinutes() / 60 : -1;
+  const todayItems = store.byDate.get(toISODate(now ?? new Date())) ?? [];
+  const runningNow = todayItems.find((t) => !t.completed && t.startHour <= nowH && nowH < t.endHour) ?? null;
+  const picked = store.activeId ? store.items.find((t) => t.id === store.activeId) ?? null : null;
+  const focusItem = picked ?? runningNow;
+  const upNext = todayItems.find((t) => !t.completed && t.startHour > nowH) ?? null;
   const empty = store.loaded && store.items.length === 0;
   const viewKey = `${effectiveView}-${effectiveView === 'month' ? `${cursor.getFullYear()}-${cursor.getMonth()}` : toISODate(effectiveView === 'week' ? monday : cursor)}`;
 
@@ -275,6 +291,14 @@ export default function Home() {
       onOpenItem={openEdit}
       onToggleItem={store.toggle}
       onSignOut={signOut}
+      focusItem={focusItem}
+      focusAuto={!picked && !!runningNow}
+      upNext={upNext}
+      activeId={store.activeId}
+      onSelect={(id) => store.setActiveId(store.activeId === id ? null : id)}
+      onClearActive={() => store.setActiveId(null)}
+      onChangeFocus={(focus) => focusItem && store.update(focusItem.id, { focus })}
+      onMarkDone={() => focusItem && !focusItem.completed && store.toggle(focusItem.id)}
     />
   );
 
@@ -403,6 +427,7 @@ export default function Home() {
                   onOpen={openEdit}
                   onToggle={store.toggle}
                   onChange={store.update}
+                  activeId={store.activeId}
                   onPickDay={effectiveView === 'week' ? (d) => { go(d); setView('day'); } : undefined}
                 />
                 </div>
@@ -413,7 +438,20 @@ export default function Home() {
         </div>
       </main>
 
-      <TaskDialog open={dialogOpen} draft={draft} onClose={() => setDialogOpen(false)} onSave={saveDraft} onDelete={deleteItem} />
+      <TaskDialog
+        open={dialogOpen}
+        draft={draft}
+        onClose={() => setDialogOpen(false)}
+        onSave={saveDraft}
+        onDelete={deleteItem}
+        onFocus={(id) => {
+          const it = store.items.find((t) => t.id === id);
+          store.setActiveId(id);
+          setDialogOpen(false);
+          if (it) go(fromISODate(it.date));
+          toast('Focus timer set', { description: it?.title });
+        }}
+      />
 
       <PlanMonth
         open={planOpen}

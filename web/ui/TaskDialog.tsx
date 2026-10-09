@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { CalendarDays, Check, Clock, Trash2, X } from 'lucide-react';
-import { Item, PALETTE, fmtDuration, hhmmToHour, hourToHhmm, hueOf } from '../lib/prep';
+import { CalendarDays, Check, Clock, Timer, Trash2, X } from 'lucide-react';
+import { FOCUS_PRESETS, Focus, FocusStyle, Item, PALETTE, fmtDuration, focusFor, hhmmToHour, hourToHhmm, hueOf } from '../lib/prep';
 import { Kbd } from './Kbd';
+import { Segmented } from './Segmented';
 import { cn } from './cn';
 
 export type Draft = {
@@ -14,6 +15,7 @@ export type Draft = {
   label: string;
   color: string;
   description: string;
+  focus?: Focus;
 };
 
 const LABELS: { label: string; color: string }[] = [
@@ -37,6 +39,7 @@ export function draftFromItem(it: Item): Draft {
     label: it.label,
     color: it.color,
     description: it.description,
+    focus: it.focus,
   };
 }
 
@@ -46,12 +49,14 @@ export function TaskDialog({
   onClose,
   onSave,
   onDelete,
+  onFocus,
 }: {
   open: boolean;
   draft: Draft | null;
   onClose: () => void;
   onSave: (d: Draft) => void;
   onDelete: (id: string) => void;
+  onFocus?: (id: string) => void;
 }) {
   const [d, setD] = useState<Draft | null>(draft);
   const [colorTouched, setColorTouched] = useState(false);
@@ -217,6 +222,40 @@ export function TaskDialog({
               </div>
             </div>
 
+            {/* Focus rhythm */}
+            <div>
+              <div className="mb-2 flex items-center gap-1.5 text-[11.5px] font-medium text-muted">
+                <Timer className="size-3.5" /> Focus rhythm
+                <span className="font-normal text-faint">
+                  {d.focus ? `${d.focus.focusMin} min focus, ${d.focus.breakMin} min break` : 'one countdown to the end'}
+                </span>
+              </div>
+              <Segmented<'off' | FocusStyle>
+                id="dlg-rhythm"
+                value={d.focus?.style ?? 'off'}
+                onChange={(m) => set({ focus: m === 'off' ? undefined : focusFor(m, d.focus) })}
+                options={[
+                  { value: 'off', label: 'Off' },
+                  { value: 'pomodoro', label: `Pomodoro ${FOCUS_PRESETS.pomodoro.focusMin}/${FOCUS_PRESETS.pomodoro.breakMin}` },
+                  { value: 'deep', label: `Deep ${FOCUS_PRESETS.deep.focusMin}/${FOCUS_PRESETS.deep.breakMin}` },
+                  { value: 'custom', label: 'Custom' },
+                ]}
+              />
+              {d.focus?.style === 'custom' && (
+                <div className="mt-2 flex items-center gap-2 text-[12.5px] text-muted">
+                  Focus
+                  <input type="number" min={5} max={180} value={d.focus.focusMin}
+                    onChange={(e) => set({ focus: { ...d.focus!, focusMin: Math.max(5, Math.min(180, Number(e.target.value) || 5)) } })}
+                    className="tabular h-8 w-16 rounded-lg bg-subtle px-2 text-center font-mono text-[13px] text-fg outline-none focus:ring-2 focus:ring-accent/60" />
+                  min, break
+                  <input type="number" min={1} max={60} value={d.focus.breakMin}
+                    onChange={(e) => set({ focus: { ...d.focus!, breakMin: Math.max(1, Math.min(60, Number(e.target.value) || 1)) } })}
+                    className="tabular h-8 w-16 rounded-lg bg-subtle px-2 text-center font-mono text-[13px] text-fg outline-none focus:ring-2 focus:ring-accent/60" />
+                  min
+                </div>
+              )}
+            </div>
+
             <textarea
               value={d.description}
               onChange={(e) => set({ description: e.target.value })}
@@ -229,12 +268,22 @@ export function TaskDialog({
           {/* Footer */}
           <div className="flex items-center justify-between border-t border-line px-4 py-3">
             {editing ? (
-              <button
-                onClick={() => d.id && onDelete(d.id)}
-                className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium text-danger transition hover:bg-danger/10"
-              >
-                <Trash2 className="size-4" /> Delete
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => d.id && onDelete(d.id)}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium text-danger transition hover:bg-danger/10"
+                >
+                  <Trash2 className="size-4" /> Delete
+                </button>
+                {onFocus && (
+                  <button
+                    onClick={() => d.id && onFocus(d.id)}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium text-muted transition hover:bg-subtle hover:text-fg"
+                  >
+                    <Timer className="size-4" /> Focus on this
+                  </button>
+                )}
+              </div>
             ) : (
               <span className="text-[12px] text-faint">Tip: drag on the calendar to pick a time</span>
             )}

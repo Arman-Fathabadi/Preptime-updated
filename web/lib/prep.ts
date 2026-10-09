@@ -25,7 +25,22 @@ export type Item = {
   endHour: number;
   color: string; // tailwind-style class, e.g. "bg-cyan-500"
   completed: boolean;
+  /** Optional focus rhythm. Without it the timer is a plain countdown to the end of the task. */
+  focus?: Focus;
 };
+
+export type FocusStyle = 'pomodoro' | 'deep' | 'custom';
+export type Focus = { style: FocusStyle; focusMin: number; breakMin: number };
+
+export const FOCUS_PRESETS: Record<Exclude<FocusStyle, 'custom'>, { focusMin: number; breakMin: number; label: string }> = {
+  pomodoro: { focusMin: 25, breakMin: 5, label: 'Pomodoro' },
+  deep: { focusMin: 52, breakMin: 17, label: 'Deep Focus' },
+};
+
+export function focusFor(style: FocusStyle, prev?: Focus): Focus {
+  if (style === 'custom') return { style, focusMin: prev?.focusMin ?? 25, breakMin: prev?.breakMin ?? 5 };
+  return { style, ...FOCUS_PRESETS[style] };
+}
 
 export type Prefs = {
   dayStartHour: number;
@@ -252,8 +267,13 @@ export function layoutDay(items: Item[]): Placed[] {
 const TASKS_KEY = 'preptime-tasks';
 const PREFS_KEY = 'preptime-preferences';
 const USER_KEY = 'preptime-username';
+const ACTIVE_KEY = 'preptime-active-id';
 
 export const uid = (prefix = 'task') => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+function isFocus(f: any): f is Focus {
+  return !!f && (f.style === 'pomodoro' || f.style === 'deep' || f.style === 'custom') && f.focusMin > 0 && f.breakMin >= 0;
+}
 
 function readItems(): Item[] {
   try {
@@ -274,6 +294,7 @@ function readItems(): Item[] {
         endHour: normalizeHour24(t.endHour),
         color: t.color || 'bg-slate-500',
         completed: !!t.completed,
+        ...(isFocus(t.focus) ? { focus: t.focus } : {}),
       }));
   } catch {
     return [];
@@ -295,12 +316,14 @@ export function usePrepStore() {
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [username, setUsername] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [activeId, setActiveIdState] = useState<string | null>(null);
   const skipNext = useRef(true);
 
   useEffect(() => {
     setItems(readItems());
     setPrefs(readPrefs());
     setUsername(localStorage.getItem(USER_KEY));
+    setActiveIdState(localStorage.getItem(ACTIVE_KEY));
     setLoaded(true);
 
     // Keep several tabs in sync.
@@ -348,6 +371,15 @@ export function usePrepStore() {
   const remove = useCallback((id: string) => setItems((prev) => prev.filter((t) => t.id !== id)), []);
   const toggle = useCallback((id: string) => setItems((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))), []);
   const replaceAll = useCallback((next: Item[]) => setItems(next), []);
+  const setActiveId = useCallback((id: string | null) => {
+    setActiveIdState(id);
+    try {
+      if (id) localStorage.setItem(ACTIVE_KEY, id);
+      else localStorage.removeItem(ACTIVE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const addSampleWeek = useCallback((monday: Date) => {
     const made: Item[] = DEMO_WEEK.map((d, i) => {
@@ -380,7 +412,7 @@ export function usePrepStore() {
     return m;
   }, [items]);
 
-  return { items, byDate, prefs, username, loaded, add, update, remove, toggle, replaceAll, addSampleWeek, setPrefs };
+  return { items, byDate, prefs, username, loaded, activeId, setActiveId, add, update, remove, toggle, replaceAll, addSampleWeek, setPrefs };
 }
 
 /* ------------------------------------------------------------------ */
@@ -475,3 +507,86 @@ export function itemsFromGeneration(result: GenResult): Item[] {
 }
 
 export const isPlanned = (it: Item) => it.id.startsWith('ai_');
+
+
+/* ------------------------------------------------------------------ */
+/* Focus timer (clock-driven, like the original "auto focus timer")    */
+/* ------------------------------------------------------------------ */
+
+export type FocusState =
+  | { kind: 'before'; startsInSec: number }
+  | { kind: 'after' }
+  | {
+      kind: 'running';
+      phase: 'focus' | 'break';
+      /** false when the task has no rhythm: one long focus countdown to its end */
+      cycles: boolean;
+      phaseRemainingSec: number;
+      phaseTotalSec: number;
+      cycle: number; // 1-based
+      blockRemainingSec: number;
+      blockTotalSec: number;
+    };
+
+/** Epoch ms for a task's date at a decimal hour (24 = midnight at the end of the day). */
+export function atHour(date: string, hour: number): number {
+  const d = fromISODate(date);
+  return d.getTime() + Math.round(hour * 3600) * 1000;
+}
+
+export function focusState(item: Pick<Item, 'date' | 'startHour' | 'endHour' | 'focus'>, now: Date): FocusState {
+  const startMs = atHour(item.date, item.startHour);
+  const endMs = atHour(item.date, item.endHour);
+  const t = now.getTime();
+  if (t < startMs) return { kind: 'before', startsInSec: Math.ceil((startMs - t) / 1000) };
+  if (t >= endMs) return { kind: 'after' };
+
+  const blockTotal = Math.round((endMs - startMs) / 1000);
+  const elapsed = (t - startMs) / 1000;
+  const blockRemaining = Math.max(0, Math.ceil(blockTotal - elapsed));
+
+  if (!item.focus) {
+    return {
+      kind: 'running',
+      phase: 'focus',
+      cycles: false,
+      phaseRemainingSec: blockRemaining,
+      phaseTotalSec: blockTotal,
+      cycle: 1,
+      blockRemainingSec: blockRemaining,
+      blockTotalSec: blockTotal,
+    };
+  }
+
+  const focusSec = item.focus.focusMin * 60;
+  const breakSec = item.focus.breakMin * 60;
+  const cycleSec = focusSec + breakSec;
+  const cycle = Math.floor(elapsed / cycleSec);
+  const into = elapsed - cycle * cycleSec;
+  const inFocus = into < focusSec;
+  const phaseTotal = inFocus ? focusSec : breakSec;
+  const phaseRemaining = inFocus ? focusSec - into : cycleSec - into;
+  return {
+    kind: 'running',
+    phase: inFocus ? 'focus' : 'break',
+    cycles: true,
+    // never promise more time than the task has left
+    phaseRemainingSec: Math.min(Math.ceil(phaseRemaining), blockRemaining),
+    phaseTotalSec: phaseTotal,
+    cycle: cycle + 1,
+    blockRemainingSec: blockRemaining,
+    blockTotalSec: blockTotal,
+  };
+}
+
+/** 1500 -> "25:00", 3725 -> "1:02:05", 90000 -> "1d 1h" */
+export function fmtCountdown(totalSec: number): string {
+  const s = Math.max(0, Math.floor(totalSec));
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (d > 0) return h ? `${d}d ${h}h` : `${d}d`;
+  if (h > 0) return `${h}:${pad(m)}:${pad(sec)}`;
+  return `${pad(m)}:${pad(sec)}`;
+}

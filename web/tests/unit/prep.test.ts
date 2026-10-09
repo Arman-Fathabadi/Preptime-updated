@@ -13,6 +13,9 @@ import {
   normalizeHour24,
   weekTitle,
   DEFAULT_PREFS,
+  focusState,
+  fmtCountdown,
+  focusFor,
 } from '../../lib/prep';
 
 const item = (id: string, start: number, end: number, date = '2026-10-12'): Item => ({
@@ -102,5 +105,65 @@ describe('month generation mapping', () => {
     expect(out[0].startHour).toBe(11.5);
     expect(out[0].endHour).toBe(12.5);
     expect(out[0].id.startsWith('ai_')).toBe(true);
+  });
+});
+
+describe('focus timer', () => {
+  // Task on 2026-10-12 from 09:00 to 11:00
+  const base = { date: '2026-10-12', startHour: 9, endHour: 11 };
+  const at = (h: number, m = 0, sec = 0) => new Date(2026, 9, 12, h, m, sec);
+
+  it('counts down to the start before the task begins', () => {
+    const s = focusState(base, at(8, 30));
+    expect(s).toEqual({ kind: 'before', startsInSec: 1800 });
+  });
+
+  it('is finished at and after the end', () => {
+    expect(focusState(base, at(11)).kind).toBe('after');
+    expect(focusState(base, at(13)).kind).toBe('after');
+  });
+
+  it('without a rhythm it is one countdown to the end of the task', () => {
+    const s = focusState(base, at(10, 15));
+    expect(s).toMatchObject({ kind: 'running', phase: 'focus', cycles: false, phaseRemainingSec: 2700, blockRemainingSec: 2700, blockTotalSec: 7200 });
+  });
+
+  it('Pomodoro 25/5: focus, then break, then the next cycle', () => {
+    const f = { ...base, focus: focusFor('pomodoro') };
+    expect(focusState(f, at(9, 10))).toMatchObject({ phase: 'focus', phaseRemainingSec: 15 * 60, cycle: 1, cycles: true });
+    expect(focusState(f, at(9, 26))).toMatchObject({ phase: 'break', phaseRemainingSec: 4 * 60, cycle: 1 });
+    expect(focusState(f, at(9, 31))).toMatchObject({ phase: 'focus', phaseRemainingSec: 24 * 60, cycle: 2 }); // 1 min into cycle 2
+  });
+
+  it('switches phase exactly on the boundary', () => {
+    const f = { ...base, focus: focusFor('pomodoro') };
+    expect(focusState(f, at(9, 25, 0))).toMatchObject({ phase: 'break', phaseRemainingSec: 300 });
+    expect(focusState(f, at(9, 24, 59))).toMatchObject({ phase: 'focus', phaseRemainingSec: 1 });
+  });
+
+  it('Deep Focus uses 52/17', () => {
+    const f = { ...base, focus: focusFor('deep') };
+    expect(focusState(f, at(9, 53))).toMatchObject({ phase: 'break', phaseTotalSec: 17 * 60 });
+  });
+
+  it('never promises more time than the task has left', () => {
+    // 09:00-09:26 with 25/5: at 09:25:30 the break would be 4.5 min but only 30 s remain
+    const f = { date: '2026-10-12', startHour: 9, endHour: 9 + 26 / 60, focus: focusFor('pomodoro') };
+    const s = focusState(f, at(9, 25, 30));
+    expect(s).toMatchObject({ phase: 'break' });
+    if (s.kind === 'running') expect(s.phaseRemainingSec).toBeLessThanOrEqual(s.blockRemainingSec);
+  });
+
+  it('custom rhythm keeps its own minutes', () => {
+    const f = { ...base, focus: { style: 'custom' as const, focusMin: 10, breakMin: 2 } };
+    expect(focusState(f, at(9, 11))).toMatchObject({ phase: 'break', phaseRemainingSec: 60 });
+  });
+
+  it('formats countdowns', () => {
+    expect(fmtCountdown(1500)).toBe('25:00');
+    expect(fmtCountdown(59)).toBe('00:59');
+    expect(fmtCountdown(3725)).toBe('1:02:05');
+    expect(fmtCountdown(90000)).toBe('1d 1h');
+    expect(fmtCountdown(-5)).toBe('00:00');
   });
 });
