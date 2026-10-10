@@ -12,6 +12,44 @@ const GUTTER_PX = 56;
 const snap = (h: number) => Math.round(h / SNAP) * SNAP;
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
+
+/* ---- touch: long-press to drag, so ordinary swipes keep scrolling ----- */
+const LONG_PRESS_MS = 350;
+type Press = 'hold' | 'tap' | 'scroll';
+
+/** Resolves 'hold' after a still press, 'tap' if released first, 'scroll' if the finger moves. */
+function longPress(e: React.PointerEvent): Promise<Press> {
+  return new Promise((resolve) => {
+    const x0 = e.clientX;
+    const y0 = e.clientY;
+    const id = e.pointerId;
+    let done = false;
+    const end = (r: Press) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      window.removeEventListener('pointermove', mv);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', cc);
+      resolve(r);
+    };
+    const mv = (ev: PointerEvent) => ev.pointerId === id && Math.hypot(ev.clientX - x0, ev.clientY - y0) > 8 && end('scroll');
+    const up = (ev: PointerEvent) => ev.pointerId === id && end('tap');
+    const cc = () => end('scroll');
+    const timer = setTimeout(() => end('hold'), LONG_PRESS_MS);
+    window.addEventListener('pointermove', mv);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', cc);
+  });
+}
+
+/** While a touch drag runs, stop the page scrolling under the finger. Returns the release. */
+function lockScroll() {
+  const block = (ev: TouchEvent) => ev.preventDefault();
+  window.addEventListener('touchmove', block, { passive: false });
+  return () => window.removeEventListener('touchmove', block);
+}
+
 type Draft = { col: number; a: number; b: number };
 type Drag = {
   id: string;
@@ -104,6 +142,45 @@ export function TimeGrid({
     if (e.button !== 0) return;
     if ((e.target as HTMLElement).closest('[data-event]')) return;
     const colEl = e.currentTarget;
+
+    if (e.pointerType === 'touch') {
+      // Tap opens a new task at that time; long-press then drag chooses a range; a swipe just scrolls.
+      const y0 = e.clientY;
+      longPress(e).then((r) => {
+        if (r === 'tap') {
+          const start = clamp(Math.floor(hourAt(y0, colEl) * 2) / 2, 0, 23);
+          onCreate(dates[col], start, Math.min(24, start + 1));
+        } else if (r === 'hold') {
+          navigator.vibrate?.(8);
+          const unlock = lockScroll();
+          const h0 = snap(hourAt(y0, colEl));
+          let h1 = h0;
+          setDraft({ col, a: h0, b: h0 });
+          const move = (ev: PointerEvent) => {
+            h1 = snap(hourAt(ev.clientY, colEl));
+            setDraft({ col, a: h0, b: h1 });
+          };
+          const stop = (commit: boolean) => {
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+            window.removeEventListener('pointercancel', cancel);
+            unlock();
+            setDraft(null);
+            if (commit) {
+              const a = Math.min(h0, h1);
+              onCreate(dates[col], a, Math.min(24, Math.max(h0, h1, a + 0.5)));
+            }
+          };
+          const up = () => stop(true);
+          const cancel = () => stop(false);
+          window.addEventListener('pointermove', move);
+          window.addEventListener('pointerup', up);
+          window.addEventListener('pointercancel', cancel);
+        }
+      });
+      return;
+    }
+
     colEl.setPointerCapture(e.pointerId);
     const startY = e.clientY;
     const t0 = performance.now();
@@ -145,12 +222,27 @@ export function TimeGrid({
   const beginDrag = (e: React.PointerEvent, item: Item, col: number, mode: 'move' | 'resize') => {
     if (e.button !== 0) return;
     e.stopPropagation();
+    const x = e.clientX;
+    const y = e.clientY;
+    if (e.pointerType === 'touch') {
+      // A tap still opens the task (click), a swipe scrolls, a long-press picks it up.
+      longPress(e).then((r) => {
+        if (r !== 'hold') return;
+        navigator.vibrate?.(8);
+        dragSession(item, col, mode, x, y, lockScroll());
+      });
+      return;
+    }
+    dragSession(item, col, mode, x, y);
+  };
+
+  const dragSession = (item: Item, col: number, mode: 'move' | 'resize', startX: number, startY: number, unlock?: () => void) => {
     // Listen on window: a move across days re-parents the card, which would drop element-level capture.
     const base: Drag = {
       id: item.id,
       mode,
-      startX: e.clientX,
-      startY: e.clientY,
+      startX,
+      startY,
       origCol: col,
       origStart: item.startHour,
       origEnd: item.endHour,
@@ -178,6 +270,7 @@ export function TimeGrid({
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', cancel);
+      unlock?.();
       setDrag(null);
       if (commit && cur.moved) {
         suppressClick.current = true;
@@ -346,7 +439,7 @@ export function TimeGrid({
                           width: `calc((100% - ${inset + 3}px) / ${shownCols} - ${shownCols > 1 ? 2 : 0}px)`,
                           ['--z' as string]: 1 + p.indent,
                           cursor: isDragging ? 'grabbing' : 'grab',
-                          touchAction: 'none',
+                          touchAction: 'pan-y',
                         }}
                         onOpen={() => {
                           if (suppressClick.current) return;
