@@ -56,22 +56,31 @@ describe('time formatting', () => {
 });
 
 describe('calendar layout', () => {
-  it('puts non-overlapping items in a single full-width lane', () => {
+  const at = (p: ReturnType<typeof layoutDay>, id: string) => p.find((x) => x.item.id === id)!;
+
+  it('gives a lone item the full width', () => {
     const p = layoutDay([item('a', 9, 10), item('b', 10, 11)]);
-    expect(p.every((x) => x.lane === 0 && x.lanes === 1)).toBe(true);
+    expect(p.every((x) => x.col === 0 && x.cols === 1 && x.indent === 0)).toBe(true);
   });
-  it('puts overlapping items side by side', () => {
-    const p = layoutDay([item('a', 9, 11), item('b', 10, 12)]);
-    const byId = Object.fromEntries(p.map((x) => [x.item.id, x]));
-    expect(byId.a.lane).not.toBe(byId.b.lane);
-    expect(byId.a.lanes).toBe(2);
-    expect(byId.b.lanes).toBe(2);
+
+  it('puts items that start together side by side, so none hides another', () => {
+    const p = layoutDay([item('a', 10, 12), item('b', 10, 11.5), item('c', 10.25, 12.5), item('d', 10, 11)]);
+    expect(p.map((x) => x.cols)).toEqual([4, 4, 4, 4]);
+    expect(new Set(p.map((x) => x.col)).size).toBe(4);
+    expect(p.every((x) => x.indent === 0)).toBe(true);
   });
-  it('reuses a lane once an earlier item has ended', () => {
-    const p = layoutDay([item('a', 9, 10), item('b', 9, 12), item('c', 10, 11)]);
-    const byId = Object.fromEntries(p.map((x) => [x.item.id, x]));
-    expect(byId.c.lane).toBe(byId.a.lane); // c reuses a's lane
-    expect(Math.max(...p.map((x) => x.lanes))).toBe(2);
+
+  it('cascades an item that starts later than one still running', () => {
+    const p = layoutDay([item('a', 9, 12), item('b', 10, 11)]);
+    expect(at(p, 'a').indent).toBe(0);
+    expect(at(p, 'b').indent).toBe(1);
+    expect(at(p, 'b').cols).toBe(1);
+  });
+
+  it('returns to full width once earlier items have ended', () => {
+    const p = layoutDay([item('a', 9, 10), item('b', 9.5, 10), item('c', 10, 11)]);
+    expect(at(p, 'c').indent).toBe(0);
+    expect(at(p, 'c').cols).toBe(1);
   });
 });
 

@@ -61,6 +61,16 @@ export function TimeGrid({
   const [drag, setDrag] = useState<Drag | null>(null);
   const suppressClick = useRef(false);
   const n = dates.length;
+  const [colPx, setColPx] = useState(200);
+  useEffect(() => {
+    const el = colsRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setColPx(el.getBoundingClientRect().width / n));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [n]);
+  // How many cards can sit side by side and still be readable.
+  const MIN_CARD_PX = 68;
 
   // Open on the working day, not on midnight. If today is in view, start a little before now.
   useLayoutEffect(() => {
@@ -266,17 +276,60 @@ export function TimeGrid({
                   <div className="pointer-events-none absolute inset-x-0 top-0 bg-subtle/55" style={{ height: offTop }} />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-subtle/55" style={{ height: offBottom }} />
 
+                  {(() => {
+                    // Start groups wider than the column can show collapse into a "+N" chip.
+                    const fit = Math.max(1, Math.floor((colPx - 4 - 14 * 2) / MIN_CARD_PX));
+                    const sizes = new Map<number, number>();
+                    columns[col].forEach((p) => sizes.set(p.group, p.cols));
+                    const chips: { group: number; top: number; left: number; width: number; hidden: Item[]; indent: number }[] = [];
+                    columns[col].forEach((p) => {
+                      if (p.cols > fit && p.col >= fit - 1) {
+                        let chip = chips.find((c) => c.group === p.group);
+                        if (!chip) {
+                          chip = { group: p.group, top: p.item.startHour, left: fit - 1, width: fit, hidden: [], indent: p.indent };
+                          chips.push(chip);
+                        }
+                        chip.hidden.push(p.item);
+                        chip.top = Math.min(chip.top, p.item.startHour);
+                      }
+                    });
+                    return chips.map((c) => {
+                      const inset = 2 + c.indent * 14;
+                      return (
+                        <button
+                          key={`chip-${c.group}`}
+                          data-event
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onPickDay?.(dates[col]);
+                          }}
+                          title={c.hidden.map((h) => h.title).join(', ')}
+                          className="absolute z-20 flex h-7 items-center justify-center rounded-md border border-border bg-surface text-[11.5px] font-semibold text-muted shadow-card transition hover:text-fg"
+                          style={{
+                            top: c.top * HOUR_PX + 1,
+                            left: `calc(${inset}px + (100% - ${inset + 3}px) * ${c.left} / ${c.width})`,
+                            width: `calc((100% - ${inset + 3}px) / ${c.width} - 2px)`,
+                          }}
+                        >
+                          +{c.hidden.length}
+                        </button>
+                      );
+                    });
+                  })()}
+
                   {columns[col].map((p, i) => {
+                    const fit = Math.max(1, Math.floor((colPx - 4 - 14 * 2) / MIN_CARD_PX));
+                    if (p.cols > fit && p.col >= fit - 1) return null; // shown in the "+N" chip
+                    const shownCols = Math.min(p.cols, fit);
                     const it = p.item;
                     const len = it.endHour - it.startHour;
                     const compact = len < 0.75;
                     const top = it.startHour * HOUR_PX;
                     const height = Math.max(len * HOUR_PX, 18) - 2;
-                    const w = 100 / p.lanes;
-                    // Two overlapping tasks sit side by side. Three or more would be too narrow to read,
-                    // so they cascade instead: each later one is nudged right and drawn on top.
-                    const cascade = p.lanes > 2;
+                    // Cascade: each level is nudged right; items in the same start group share the rest.
                     const STEP = 14;
+                    const inset = 2 + p.indent * STEP;
                     const isDragging = drag?.id === it.id;
                     return (
                       <EventCard
@@ -289,9 +342,9 @@ export function TimeGrid({
                         style={{
                           top: top + 1,
                           height,
-                          left: cascade ? 2 + p.lane * STEP : `calc(${p.lane * w}% + 2px)`,
-                          width: cascade ? `calc(100% - ${5 + p.lane * STEP}px)` : `calc(${w}% - 5px)`,
-                          ['--z' as string]: cascade ? 10 + p.lane : 1,
+                          left: `calc(${inset}px + (100% - ${inset + 3}px) * ${p.col} / ${shownCols})`,
+                          width: `calc((100% - ${inset + 3}px) / ${shownCols} - ${shownCols > 1 ? 2 : 0}px)`,
+                          ['--z' as string]: 1 + p.indent,
                           cursor: isDragging ? 'grabbing' : 'grab',
                           touchAction: 'none',
                         }}

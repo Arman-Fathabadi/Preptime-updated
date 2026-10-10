@@ -233,31 +233,65 @@ export function colorForName(name: string): string {
 /* Calendar layout: side-by-side columns for overlapping items         */
 /* ------------------------------------------------------------------ */
 
-export type Placed = { item: Item; lane: number; lanes: number };
+export type Placed = {
+  item: Item;
+  /** side-by-side position among items that start at about the same time */
+  col: number;
+  cols: number;
+  /** cascade depth: how many earlier, still-running groups this one sits on top of */
+  indent: number;
+  /** id of the start group this item belongs to (unique within a day) */
+  group: number;
+  /** kept for callers that only need lane counts */
+  lane: number;
+  lanes: number;
+};
 
+/** Items starting within this many hours of each other share a row side by side. */
+const SAME_START = 0.5;
+
+/**
+ * Lays out one day's items like a modern calendar:
+ *  - items that start at about the same time sit side by side, so none can hide another;
+ *  - an item that starts later than something still running cascades on top of it, indented,
+ *    so both titles stay readable.
+ */
 export function layoutDay(items: Item[]): Placed[] {
   const sorted = [...items].sort((a, b) => a.startHour - b.startHour || b.endHour - a.endHour);
   const out: Placed[] = [];
-  let cluster: Placed[] = [];
-  let clusterEnd = -1;
-
-  const flush = () => {
-    const lanes = cluster.reduce((m, p) => Math.max(m, p.lane + 1), 1);
-    cluster.forEach((p) => (p.lanes = lanes));
-    out.push(...cluster);
-    cluster = [];
-    clusterEnd = -1;
-  };
+  // groups of items that started together: { start, end, indent, members }
+  const active: { id: number; start: number; end: number; indent: number; members: Placed[] }[] = [];
+  let nextGroup = 0;
 
   for (const item of sorted) {
-    if (cluster.length && item.startHour >= clusterEnd) flush();
-    const used = new Set(cluster.filter((p) => p.item.endHour > item.startHour).map((p) => p.lane));
-    let lane = 0;
-    while (used.has(lane)) lane++;
-    cluster.push({ item, lane, lanes: 1 });
-    clusterEnd = Math.max(clusterEnd, item.endHour);
+    // drop groups that have finished before this item starts
+    for (let i = active.length - 1; i >= 0; i--) if (active[i].end <= item.startHour) active.splice(i, 1);
+
+    const last = active[active.length - 1];
+    if (last && item.startHour - last.start < SAME_START) {
+      const p: Placed = { item, col: last.members.length, cols: 0, indent: last.indent, group: last.id, lane: 0, lanes: 0 };
+      last.members.push(p);
+      last.end = Math.max(last.end, item.endHour);
+      out.push(p);
+    } else {
+      const indent = active.length ? active[active.length - 1].indent + 1 : 0;
+      const id = nextGroup++;
+      const p: Placed = { item, col: 0, cols: 0, indent, group: id, lane: 0, lanes: 0 };
+      active.push({ id, start: item.startHour, end: item.endHour, indent, members: [p] });
+      out.push(p);
+    }
   }
-  flush();
+
+  // finalise: cols per start group, lanes = total side-by-side width needed in a cluster
+  const groups = new Map<Placed, Placed[]>();
+  let current: Placed[] = [];
+  for (const p of out) {
+    if (p.col === 0) {
+      current = [p];
+      groups.set(p, current);
+    } else current.push(p);
+  }
+  groups.forEach((members) => members.forEach((m, i) => ((m.cols = members.length), (m.lane = i + m.indent), (m.lanes = members.length + m.indent))));
   return out;
 }
 

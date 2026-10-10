@@ -39,6 +39,7 @@ export function EventCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, delay: Math.min(index, 12) * 0.012, ease: [0.23, 1, 0.32, 1] }}
       data-event
+      title={`${item.title} · ${fmtRange(item.startHour, item.endHour)}`}
       // A group, not role="button": the card holds a real "mark done" button, and buttons must not nest.
       role="group"
       tabIndex={0}
