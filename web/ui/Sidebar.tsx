@@ -1,6 +1,7 @@
 import { LogOut, Monitor, Moon, Pencil, Sun } from 'lucide-react';
 import { Focus, Item, MONTHS, fmtHour, hueOf, isToday } from '../lib/prep';
 import { FocusPanel } from './FocusPanel';
+import { Weather } from './Weather';
 import { MiniCalendar } from './MiniCalendar';
 import { Segmented } from './Segmented';
 import { Theme } from './CommandPalette';
@@ -29,6 +30,7 @@ export function Sidebar({
   onOpenItem,
   onToggleItem,
   onSignOut,
+  weatherUnit,
   focusItem,
   focusAuto,
   upNext,
@@ -49,6 +51,7 @@ export function Sidebar({
   onOpenItem: (it: Item) => void;
   onToggleItem: (id: string) => void;
   onSignOut: () => void;
+  weatherUnit: 'celsius' | 'fahrenheit';
   focusItem: Item | null;
   focusAuto: boolean;
   upNext: Item | null;
@@ -70,6 +73,7 @@ export function Sidebar({
       <div className="flex items-center gap-2.5 px-5 pb-4 pt-5">
         <Logo />
         <div className="text-[15px] font-semibold tracking-tight">PrepTime</div>
+        <Weather unit={weatherUnit} />
       </div>
 
       <div className="px-4">

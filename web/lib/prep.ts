@@ -49,6 +49,7 @@ export type Prefs = {
   slotStepMin: number;
   bufferMin: number;
   maxHeavyPerDay: number;
+  weatherUnit: 'celsius' | 'fahrenheit';
 };
 
 export const DEFAULT_PREFS: Prefs = {
@@ -57,9 +58,10 @@ export const DEFAULT_PREFS: Prefs = {
   slotStepMin: 15,
   bufferMin: 5,
   maxHeavyPerDay: 3,
+  weatherUnit: 'celsius',
 };
 
-export type ViewKind = 'day' | 'week' | 'month';
+export type ViewKind = 'day' | 'week' | 'month' | 'season' | 'year';
 
 /* ------------------------------------------------------------------ */
 /* Dates                                                              */
@@ -403,6 +405,18 @@ export function usePrepStore() {
     );
   }, []);
 
+  const updatePrefs = useCallback((patch: Partial<Prefs>) => {
+    setPrefs((prev) => {
+      const next = { ...prev, ...patch };
+      try {
+        localStorage.setItem(PREFS_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
   const remove = useCallback((id: string) => setItems((prev) => prev.filter((t) => t.id !== id)), []);
   const toggle = useCallback((id: string) => setItems((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))), []);
   const replaceAll = useCallback((next: Item[]) => setItems(next), []);
@@ -447,7 +461,7 @@ export function usePrepStore() {
     return m;
   }, [items]);
 
-  return { items, byDate, prefs, username, loaded, activeId, setActiveId, add, update, remove, toggle, replaceAll, addSampleWeek, setPrefs };
+  return { items, byDate, prefs, username, loaded, activeId, setActiveId, add, update, remove, toggle, replaceAll, addSampleWeek, setPrefs, updatePrefs };
 }
 
 /* ------------------------------------------------------------------ */
@@ -629,4 +643,103 @@ export function fmtCountdown(totalSec: number): string {
   if (d > 0) return h ? `${d}d ${h}h` : `${d}d`;
   if (h > 0) return `${h}:${pad(m)}:${pad(sec)}`;
   return `${pad(m)}:${pad(sec)}`;
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Seasons                                                            */
+/* ------------------------------------------------------------------ */
+
+/** Northern-hemisphere meteorological seasons, as in the original app. */
+export function seasonOf(d: Date): { name: 'Winter' | 'Spring' | 'Summer' | 'Fall'; months: Date[] } {
+  const m = d.getMonth();
+  const y = d.getFullYear();
+  const startMonth = m === 11 ? 11 : m <= 1 ? -1 : m <= 4 ? 2 : m <= 7 ? 5 : 8;
+  const name = startMonth === 2 ? 'Spring' : startMonth === 5 ? 'Summer' : startMonth === 8 ? 'Fall' : 'Winter';
+  const months = [0, 1, 2].map((i) => new Date(y, startMonth + i, 1));
+  return { name, months };
+}
+
+/* ------------------------------------------------------------------ */
+/* Export / import                                                    */
+/* ------------------------------------------------------------------ */
+
+export const BACKUP_VERSION = 1;
+
+export function backupJSON(items: Item[], prefs: Prefs) {
+  return JSON.stringify({ app: 'preptime', version: BACKUP_VERSION, exportedAt: new Date().toISOString(), prefs, tasks: items }, null, 2);
+}
+
+/** Parses a backup file. Throws with a readable message when it isn't one. */
+export function parseBackup(text: string): { tasks: Item[]; prefs?: Partial<Prefs> } {
+  let data: any;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error('That file is not valid JSON.');
+  }
+  const list = Array.isArray(data) ? data : data?.tasks;
+  if (!Array.isArray(list)) throw new Error('No tasks found in that file.');
+  const tasks: Item[] = [];
+  for (const t of list) {
+    if (!t || typeof t.title !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(String(t.date))) continue;
+    const startHour = normalizeHour24(t.startHour);
+    const endHour = normalizeHour24(t.endHour);
+    if (!(endHour > startHour)) continue;
+    tasks.push({
+      id: String(t.id || uid('import')),
+      title: t.title.slice(0, 200),
+      description: typeof t.description === 'string' ? t.description : '',
+      label: typeof t.label === 'string' ? t.label : '',
+      day: fromISODate(t.date).getDay(),
+      date: t.date,
+      startHour,
+      endHour,
+      color: typeof t.color === 'string' && /^bg-[a-z]+-\d{2,3}$/.test(t.color) ? t.color : 'bg-slate-500',
+      completed: !!t.completed,
+      ...(isFocus(t.focus) ? { focus: { style: t.focus.style, focusMin: t.focus.focusMin, breakMin: t.focus.breakMin } } : {}),
+    });
+  }
+  if (!tasks.length) throw new Error('No valid tasks found in that file.');
+  return { tasks, prefs: data && !Array.isArray(data) && data.prefs ? data.prefs : undefined };
+}
+
+const csvCell = (v: string | number) => {
+  const s = String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+export function tasksCSV(items: Item[]) {
+  const head = ['date', 'start', 'end', 'title', 'label', 'completed', 'notes'];
+  const rows = [...items]
+    .sort((a, b) => a.date.localeCompare(b.date) || a.startHour - b.startHour)
+    .map((t) => [t.date, hourToHhmm(t.startHour), t.endHour >= 24 ? '24:00' : hourToHhmm(t.endHour), t.title, t.label, t.completed ? 'yes' : 'no', t.description].map(csvCell).join(','));
+  return [head.join(','), ...rows].join('\r\n');
+}
+
+/** iCalendar file (floating local times) that Google, Apple and Outlook calendars can import. */
+export function tasksICS(items: Item[]) {
+  const esc = (s: string) => s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  const stamp = (date: string, hour: number) => {
+    const d = new Date(atHour(date, hour));
+    return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+  };
+  const now = new Date();
+  const dtstamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//PrepTime//Planner//EN', 'CALSCALE:GREGORIAN'];
+  for (const t of items) {
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:${t.id}@preptime`,
+      `DTSTAMP:${dtstamp}`,
+      `DTSTART:${stamp(t.date, t.startHour)}`,
+      `DTEND:${stamp(t.date, t.endHour)}`,
+      `SUMMARY:${esc(t.title)}`,
+      ...(t.label ? [`CATEGORIES:${esc(t.label)}`] : []),
+      ...(t.description ? [`DESCRIPTION:${esc(t.description)}`] : []),
+      'END:VEVENT'
+    );
+  }
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
 }

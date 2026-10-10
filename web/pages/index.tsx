@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Menu, Plus, Search, Wand2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Menu, Plus, Search, Settings, Wand2 } from 'lucide-react';
 import {
   Item,
   MONTHS,
@@ -18,6 +18,7 @@ import {
   itemsFromGeneration,
   mondayOf,
   isToday,
+  seasonOf,
   startOfDay,
   toISODate,
   usePrepStore,
@@ -30,6 +31,8 @@ import { Sidebar, Logo } from '../ui/Sidebar';
 import { TimeGrid } from '../ui/TimeGrid';
 import { MonthView } from '../ui/MonthView';
 import { EmptyState } from '../ui/EmptyState';
+import { YearView } from '../ui/YearView';
+import { SettingsDialog } from '../ui/SettingsDialog';
 import { Segmented } from '../ui/Segmented';
 import { Kbd } from '../ui/Kbd';
 import { useMediaQuery, useNow, useStoredState } from '../ui/hooks';
@@ -39,6 +42,8 @@ const VIEWS: { value: ViewKind; label: string }[] = [
   { value: 'day', label: 'Day' },
   { value: 'week', label: 'Week' },
   { value: 'month', label: 'Month' },
+  { value: 'season', label: 'Season' },
+  { value: 'year', label: 'Year' },
 ];
 
 const longDay = (d: Date) => d.toLocaleString('en', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -52,7 +57,7 @@ export default function Home() {
 
   const [storedView, setStoredView] = useStoredState<string>('preptime-view', 'week');
   const [theme, setThemeState] = useStoredState<Theme>('preptime-theme', 'system');
-  const view: ViewKind = storedView === 'day' ? 'day' : storedView === 'month' || storedView === 'season' || storedView === 'year' ? 'month' : 'week';
+  const view: ViewKind = (['day', 'week', 'month', 'season', 'year'] as const).includes(storedView as ViewKind) ? (storedView as ViewKind) : 'week';
   const effectiveView: ViewKind = narrow && view === 'week' ? 'day' : view;
 
   const [cursor, setCursor] = useState<Date>(() => startOfDay(new Date()));
@@ -62,6 +67,7 @@ export default function Home() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   /* ---- auth + backend wake-up --------------------------------------- */
   useEffect(() => {
@@ -106,7 +112,15 @@ export default function Home() {
 
   const step = useCallback(
     (sign: 1 | -1) => {
-      go(effectiveView === 'month' ? addMonths(cursor, sign) : addDays(cursor, sign * (effectiveView === 'week' ? 7 : 1)), sign);
+      const d =
+        effectiveView === 'year'
+          ? addMonths(cursor, sign * 12)
+          : effectiveView === 'season'
+            ? addMonths(cursor, sign * 3)
+            : effectiveView === 'month'
+              ? addMonths(cursor, sign)
+              : addDays(cursor, sign * (effectiveView === 'week' ? 7 : 1));
+      go(d, sign);
     },
     [cursor, effectiveView, go]
   );
@@ -120,12 +134,18 @@ export default function Home() {
     [effectiveView, cursor.getTime()]
   );
 
+  const season = seasonOf(cursor);
+  const seasonYears = [...new Set(season.months.map((m) => m.getFullYear()))];
   const title =
     effectiveView === 'day'
       ? longDay(cursor)
       : effectiveView === 'week'
         ? weekTitle(monday)
-        : `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
+        : effectiveView === 'season'
+          ? `${season.name} ${seasonYears.length > 1 ? `${seasonYears[0]}–${String(seasonYears[1]).slice(2)}` : seasonYears[0]}`
+          : effectiveView === 'year'
+            ? `${cursor.getFullYear()}`
+            : `${MONTHS[cursor.getMonth()]} ${cursor.getFullYear()}`;
 
   /* ---- editing ------------------------------------------------------ */
   const openCreate = useCallback(
@@ -227,7 +247,7 @@ export default function Home() {
       }
       const t = e.target as Partial<HTMLElement> | null;
       if (t?.closest?.('input, textarea, select, [contenteditable], [role=dialog]') || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (dialogOpen || paletteOpen || planOpen) return;
+      if (dialogOpen || paletteOpen || planOpen || settingsOpen) return;
       switch (e.key.toLowerCase()) {
         case 'n':
           e.preventDefault();
@@ -244,6 +264,15 @@ export default function Home() {
           break;
         case 'm':
           setView('month');
+          break;
+        case 's':
+          setView('season');
+          break;
+        case 'y':
+          setView('year');
+          break;
+        case ',':
+          setSettingsOpen(true);
           break;
         case 'p':
           setPlanOpen(true);
@@ -263,7 +292,7 @@ export default function Home() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dialogOpen, paletteOpen, planOpen, cursor, now, step]);
+  }, [dialogOpen, paletteOpen, planOpen, settingsOpen, cursor, now, step]);
 
   /* ---- render ------------------------------------------------------- */
   const dayItems = store.byDate.get(toISODate(cursor)) ?? [];
@@ -276,7 +305,15 @@ export default function Home() {
   const focusItem = picked ?? runningNow;
   const upNext = todayItems.find((t) => !t.completed && t.startHour > nowH) ?? null;
   const empty = store.loaded && store.items.length === 0;
-  const viewKey = `${effectiveView}-${effectiveView === 'month' ? `${cursor.getFullYear()}-${cursor.getMonth()}` : toISODate(effectiveView === 'week' ? monday : cursor)}`;
+  const viewKey = `${effectiveView}-${
+    effectiveView === 'year'
+      ? cursor.getFullYear()
+      : effectiveView === 'season'
+        ? toISODate(season.months[0])
+        : effectiveView === 'month'
+          ? `${cursor.getFullYear()}-${cursor.getMonth()}`
+          : toISODate(effectiveView === 'week' ? monday : cursor)
+  }`;
 
   const sidebar = (
     <Sidebar
@@ -294,6 +331,7 @@ export default function Home() {
       onOpenItem={openEdit}
       onToggleItem={store.toggle}
       onSignOut={signOut}
+      weatherUnit={store.prefs.weatherUnit}
       focusItem={focusItem}
       focusAuto={!picked && !!runningNow}
       upNext={upNext}
@@ -374,6 +412,15 @@ export default function Home() {
             </button>
 
             <button
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Settings"
+              title="Settings (,)"
+              className="grid size-8 place-items-center rounded-lg border border-border text-muted transition hover:bg-subtle hover:text-fg active:scale-95"
+            >
+              <Settings className="size-4" />
+            </button>
+
+            <button
               onClick={() => setPlanOpen(true)}
               className="inline-flex h-8 items-center gap-2 rounded-lg border border-border px-2.5 text-[13px] font-medium transition hover:bg-subtle active:scale-[0.98]"
               title="Plan the next three weeks (P)"
@@ -405,7 +452,9 @@ export default function Home() {
               <ChevronRight className="size-[18px]" />
             </button>
           </div>
-          <Segmented<ViewKind> id="view-m" ariaLabel="View" value={view} onChange={setView} options={VIEWS} />
+          <div className="no-scrollbar min-w-0 overflow-x-auto">
+            <Segmented<ViewKind> id="view-m" size="sm" ariaLabel="View" value={view} onChange={setView} options={VIEWS} />
+          </div>
         </div>
 
         {/* View */}
@@ -419,7 +468,17 @@ export default function Home() {
               transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
               className="h-full"
             >
-              {effectiveView === 'month' ? (
+              {effectiveView === 'year' || effectiveView === 'season' ? (
+                <YearView
+                  variant={effectiveView}
+                  months={effectiveView === 'year' ? Array.from({ length: 12 }, (_, i) => new Date(cursor.getFullYear(), i, 1)) : season.months}
+                  byDate={store.byDate}
+                  onPickDay={(d) => {
+                    go(d);
+                    setView('day');
+                  }}
+                />
+              ) : effectiveView === 'month' ? (
                 <MonthView
                   month={cursor}
                   byDate={store.byDate}
@@ -467,6 +526,17 @@ export default function Home() {
         }}
       />
 
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        prefs={store.prefs}
+        onPrefs={store.updatePrefs}
+        theme={theme}
+        onTheme={setThemeState}
+        items={store.items}
+        onReplaceAll={store.replaceAll}
+      />
+
       <PlanMonth
         open={planOpen}
         onOpenChange={setPlanOpen}
@@ -491,6 +561,7 @@ export default function Home() {
           prev: () => step(-1),
           next: () => step(1),
           setView,
+          openSettings: () => setSettingsOpen(true),
           setTheme: setThemeState,
           openItem: (it) => {
             go(fromISODate(it.date));

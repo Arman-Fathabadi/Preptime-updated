@@ -7,6 +7,9 @@ import {
   CalendarRange,
   CornerDownLeft,
   LayoutGrid,
+  CalendarFold,
+  Grid3x3,
+  Settings,
   Monitor,
   Moon,
   Plus,
@@ -32,7 +35,8 @@ type Props = {
     today: () => void;
     prev: () => void;
     next: () => void;
-    setView: (v: 'day' | 'week' | 'month') => void;
+    setView: (v: 'day' | 'week' | 'month' | 'season' | 'year') => void;
+    openSettings: () => void;
     setTheme: (t: Theme) => void;
     openItem: (it: Item) => void;
   };
@@ -81,7 +85,10 @@ export function CommandPalette({ open, onOpenChange, items, hasItems, actions }:
             <Kbd className="ml-auto">N</Kbd>
           </Command.Item>
           <Command.Item className={itemCls} onSelect={run(actions.planMonth)} keywords={['generate', 'plan', 'month', 'ai']}>
-            <Wand2 className="size-4 text-muted" /> Plan the next 3 weeks
+            <Wand2 className="size-4 text-muted" /> Plan the next 3 weeks <Kbd className="ml-auto">P</Kbd>
+          </Command.Item>
+          <Command.Item className={itemCls} onSelect={run(actions.openSettings)} keywords={['settings', 'preferences', 'export', 'import', 'backup', 'ics', 'csv', 'weather']}>
+            <Settings className="size-4 text-muted" /> Settings, export and import <Kbd className="ml-auto">,</Kbd>
           </Command.Item>
           {!hasItems && (
             <Command.Item className={itemCls} onSelect={run(actions.sampleWeek)} keywords={['demo', 'example', 'try']}>
@@ -111,6 +118,12 @@ export function CommandPalette({ open, onOpenChange, items, hasItems, actions }:
           </Command.Item>
           <Command.Item className={itemCls} onSelect={run(() => actions.setView('month'))} keywords={['view', 'month']}>
             <LayoutGrid className="size-4 text-muted" /> Month view <Kbd className="ml-auto">M</Kbd>
+          </Command.Item>
+          <Command.Item className={itemCls} onSelect={run(() => actions.setView('season'))} keywords={['view', 'season', 'quarter']}>
+            <CalendarFold className="size-4 text-muted" /> Season view <Kbd className="ml-auto">S</Kbd>
+          </Command.Item>
+          <Command.Item className={itemCls} onSelect={run(() => actions.setView('year'))} keywords={['view', 'year', 'overview']}>
+            <Grid3x3 className="size-4 text-muted" /> Year view <Kbd className="ml-auto">Y</Kbd>
           </Command.Item>
         </Command.Group>
 
