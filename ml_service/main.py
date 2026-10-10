@@ -2,6 +2,7 @@
 FastAPI service for intelligent scheduling.
 """
 
+import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -18,6 +19,8 @@ from ml_service.scheduler import (
 from ml_service.scorer import SlotScorer
 from ml_service.pattern_analyzer import PatternAnalyzer
 from ml_service.month_generator import MonthGenerator
+
+logger = logging.getLogger("preptime.main")
 
 
 # Request/Response models
@@ -174,11 +177,11 @@ async def generate_month(request: GenerateMonthRequest):
         HTTPException: 400 for validation errors, 500 for internal errors
     """
     try:
-        print(f"[DEBUG API] Received {len(request.week1Blocks)} blocks and {len(request.week1Tasks)} tasks")
+        logger.debug(f"Received {len(request.week1Blocks)} blocks and {len(request.week1Tasks)} tasks")
         if request.week1Tasks:
-            print(f"[DEBUG API] First task: {request.week1Tasks[0].title}, color: {request.week1Tasks[0].color}")
+            logger.debug(f"First task: {request.week1Tasks[0].title}, color: {request.week1Tasks[0].color}")
         if request.week1Blocks:
-            print(f"[DEBUG API] First block: start={request.week1Blocks[0].start}")
+            logger.debug(f"First block: start={request.week1Blocks[0].start}")
         
         # Analyze Week 1 patterns
         pattern = pattern_analyzer.analyze_week(

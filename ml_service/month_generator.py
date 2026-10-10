@@ -3,6 +3,7 @@ Month Schedule Generator
 Generates Weeks 2-4 based on Week 1 patterns with productivity techniques
 """
 
+import logging
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 import random
@@ -10,6 +11,8 @@ from shared.models import Task, Event, ScheduledBlock, Preferences
 from ml_service.pattern_analyzer import SchedulePattern
 from ml_service.scheduler import generate_free_slots, greedy_schedule, Slot
 from ml_service.scorer import SlotScorer
+
+logger = logging.getLogger("preptime.month_generator")
 
 
 class MonthGenerator:
@@ -44,52 +47,122 @@ class MonthGenerator:
         generated_tasks = []
         all_scheduled_blocks = []
         
-        # Generate tasks for each week (Weeks 2-4)
+        # Every Week 1 task is a template anchored to its weekday and start time.
+        templates = self._extract_week1_task_templates(week1_tasks, week1_blocks)
+
         for week_num in range(2, 5):
             week_start = start_date + timedelta(weeks=week_num - 2)
             week_end = week_start + timedelta(days=7)
-            
-            # Generate tasks for this week based on patterns
-            week_tasks = self._generate_week_tasks(
-                pattern=pattern,
+            week_events = self._filter_events_for_week(existing_events, week_start, week_end)
+
+            week_tasks, week_blocks = self._place_week_anchored(
+                templates=templates,
                 week_num=week_num,
                 week_start=week_start,
-                week1_tasks=week1_tasks,
-                week1_blocks=week1_blocks
-            )
-            
-            # Filter events for this week
-            week_events = self._filter_events_for_week(
-                existing_events,
-                week_start,
-                week_end
-            )
-            
-            # Generate schedule for this week
-            week_schedule = self._schedule_week_with_techniques(
-                tasks=week_tasks,
                 events=week_events,
-                pattern=pattern,
-                preferences=preferences,
-                week_start=week_start,
-                week_end=week_end
+                buffer_min=preferences.buffer_min,
             )
-            
             generated_tasks.extend(week_tasks)
-            all_scheduled_blocks.extend(week_schedule["scheduledBlocks"])
-        
+            all_scheduled_blocks.extend(week_blocks)
+
         return {
             "generatedTasks": generated_tasks,
             "scheduledBlocks": all_scheduled_blocks,
             "appliedTechniques": [
-                "Pomodoro Technique (25min work + 5min break)",
-                "Time Blocking (similar tasks grouped)",
-                "Energy Management (hard tasks in peak hours)",
-                "Break Optimization (regular intervals)",
-                "Task Distribution (balanced across days)"
+                "Same weekday and start time as your Week 1 (Pattern Anchoring)",
+                "Nearest free time on the same day when a fixed event is in the way",
+                "Buffer kept around fixed events",
+                "Original durations, labels and colours preserved",
             ]
         }
     
+    # Furthest a task may move from its Week 1 start time to avoid a fixed event.
+    MAX_SHIFT_MIN = 180
+    SHIFT_STEP_MIN = 15
+
+    def _place_week_anchored(
+        self,
+        templates: List[Dict[str, Any]],
+        week_num: int,
+        week_start: datetime,
+        events: List[Event],
+        buffer_min: int = 0,
+    ):
+        """Copy each Week 1 task to the same weekday and start time in this week.
+
+        A task only moves when a fixed event (plus the buffer) is in the way, and then to the
+        nearest free start on the same day, trying later and earlier in 15-minute steps up to
+        MAX_SHIFT_MIN. If nothing fits it is left out rather than pushed to another day.
+        Tasks from Week 1 that overlapped each other still overlap here: that was the user's choice.
+        """
+        tasks: List[Task] = []
+        blocks: List[ScheduledBlock] = []
+        buffer = timedelta(minutes=max(0, buffer_min))
+
+        busy = []
+        for ev in events:
+            ev_start = datetime.fromisoformat(ev.start.replace('Z', '+00:00'))
+            ev_end = datetime.fromisoformat(ev.end.replace('Z', '+00:00'))
+            busy.append((ev_start - buffer, ev_end + buffer))
+
+        def clashes(a: datetime, b: datetime) -> bool:
+            for s0, e0 in busy:
+                try:
+                    if a < e0 and b > s0:
+                        return True
+                except TypeError:
+                    # naive vs aware: compare wall clock
+                    if a.replace(tzinfo=None) < e0.replace(tzinfo=None) and b.replace(tzinfo=None) > s0.replace(tzinfo=None):
+                        return True
+            return False
+
+        week_day0 = week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        ordered = sorted(templates, key=lambda t: (t['day_of_week'], t['start_minutes']))
+        for idx, tpl in enumerate(ordered):
+            day = week_day0 + timedelta(days=(tpl['day_of_week'] - week_day0.weekday()) % 7)
+            day_end = day + timedelta(days=1)
+            duration = timedelta(minutes=tpl['duration_min'])
+            target = day + timedelta(minutes=tpl['start_minutes'])
+
+            placed = None
+            offsets = [0]
+            for k in range(self.SHIFT_STEP_MIN, self.MAX_SHIFT_MIN + 1, self.SHIFT_STEP_MIN):
+                offsets += [k, -k]
+            for off in offsets:
+                start = target + timedelta(minutes=off)
+                end = start + duration
+                if start < day or end > day_end:
+                    continue
+                if not clashes(start, end):
+                    placed = (start, end)
+                    break
+            if placed is None:
+                continue
+
+            task_id = f"gen_w{week_num}_{idx}_{random.randint(1000, 9999)}"
+            start, end = placed
+            tasks.append(Task(
+                id=task_id,
+                title=tpl['title'],
+                durationMin=tpl['duration_min'],
+                dueAt=None,
+                type=tpl['type'],
+                energy=tpl['energy'],
+                splittable=False,
+                priority=tpl['priority'],
+                mode=tpl['mode'],
+                window={'startHour': start.hour, 'endHour': min(24, end.hour + (1 if end.minute else 0))},
+                label=tpl.get('label'),
+                color=tpl.get('color'),
+            ))
+            blocks.append(ScheduledBlock(
+                id=f"block_{task_id}",
+                taskId=task_id,
+                start=start.isoformat(),
+                end=end.isoformat(),
+            ))
+        return tasks, blocks
+
     def _generate_week_tasks(
         self,
         pattern: SchedulePattern,
@@ -107,7 +180,7 @@ class MonthGenerator:
         if not task_templates:
             return tasks
         
-        print(f"[DEBUG] Week {week_num}: Found {len(task_templates)} templates from Week 1")
+        logger.debug(f"Week {week_num}: Found {len(task_templates)} templates from Week 1")
         
         # Group templates by day of week (0=Monday, 6=Sunday)
         templates_by_day = {}
@@ -117,7 +190,7 @@ class MonthGenerator:
                 templates_by_day[day] = []
             templates_by_day[day].append(template)
         
-        print(f"[DEBUG] Templates grouped by day: {[(day, len(temps)) for day, temps in templates_by_day.items()]}")
+        logger.debug(f"Templates grouped by day: {[(day, len(temps)) for day, temps in templates_by_day.items()]}")
         
         # For each day of the week, generate tasks matching that day from Week 1
         for day_offset in range(7):
@@ -131,7 +204,7 @@ class MonthGenerator:
             # Get all templates that were on this day of week in Week 1
             day_templates = templates_by_day.get(day_of_week, [])
             
-            print(f"[DEBUG] Day {day_offset} ({['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][day_of_week]}): {len(day_templates)} templates")
+            logger.debug(f"Day {day_offset} ({['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][day_of_week]}): {len(day_templates)} templates")
             
             # Generate all tasks for this day
             for template_idx, template in enumerate(day_templates):
@@ -146,7 +219,7 @@ class MonthGenerator:
                 )
                 tasks.append(task)
         
-        print(f"[DEBUG] Week {week_num}: Generated {len(tasks)} tasks total")
+        logger.debug(f"Week {week_num}: Generated {len(tasks)} tasks total")
         return tasks
     
     def _generate_task_from_template(
@@ -401,9 +474,9 @@ class MonthGenerator:
             max_heavy_per_day=preferences.max_heavy_per_day
         )
         
-        print(f"[DEBUG] Scheduled {len(schedule['scheduledBlocks'])} out of {len(tasks_with_breaks)} tasks")
+        logger.debug(f"Scheduled {len(schedule['scheduledBlocks'])} out of {len(tasks_with_breaks)} tasks")
         if len(schedule['scheduledBlocks']) < len(tasks_with_breaks):
-            print(f"[DEBUG] WARNING: Failed to schedule {len(tasks_with_breaks) - len(schedule['scheduledBlocks'])} tasks!")
+            logger.debug(f"WARNING: Failed to schedule {len(tasks_with_breaks) - len(schedule['scheduledBlocks'])} tasks!")
         
         return schedule
     
@@ -526,7 +599,7 @@ class MonthGenerator:
         """
         templates = []
         
-        print(f"[DEBUG] Extracting templates from {len(week1_blocks)} blocks and {len(week1_tasks)} tasks")
+        logger.debug(f"Extracting templates from {len(week1_blocks)} blocks and {len(week1_tasks)} tasks")
         
         # Create task map by ID
         task_map = {task.id: task for task in week1_tasks}
@@ -553,17 +626,19 @@ class MonthGenerator:
                     task = task_map.get(block.id)
                 
                 if i < 3:
-                    print(f"[DEBUG] Block {i}: task_id={task_id}, block.id={block.id}, task_found={task is not None}")
+                    logger.debug(f"Block {i}: task_id={task_id}, block.id={block.id}, task_found={task is not None}")
                     if task:
-                        print(f"  -> Task title: {task.title}, color: {task.color}")
+                        logger.debug(f"  -> Task title: {task.title}, color: {task.color}")
                 
                 if not task:
-                    print(f"[DEBUG] WARNING: No task found for block {i} (task_id={task_id}, block.id={block.id})")
+                    logger.debug(f"WARNING: No task found for block {i} (task_id={task_id}, block.id={block.id})")
                     continue
                 
                 # Create template from task data
+                import re
                 templates.append({
-                    'title': task.title,
+                    'title': re.sub(r'\s*\(W\d+\)\s*', '', task.title).strip() or task.title,
+                    'start_minutes': block_start.hour * 60 + block_start.minute,
                     'type': task.type,
                     'duration_min': duration_min,
                     'energy': task.energy,
@@ -576,14 +651,13 @@ class MonthGenerator:
                     'day_of_week': block_start.weekday()  # 0=Monday, 6=Sunday
                 })
             except Exception as e:
-                print(f"[DEBUG] Error processing block {i}: {e}")
-                import traceback
-                traceback.print_exc()
+                logger.debug(f"Error processing block {i}: {e}")
+                logger.debug("template error", exc_info=True)
                 continue
         
-        print(f"[DEBUG] Extracted {len(templates)} templates")
+        logger.debug(f"Extracted {len(templates)} templates")
         if templates:
-            print(f"[DEBUG] Sample template: {templates[0]['title']} at hour {templates[0]['preferred_hour']}, color={templates[0]['color']}")
+            logger.debug(f"Sample template: {templates[0]['title']} at hour {templates[0]['preferred_hour']}, color={templates[0]['color']}")
         return templates
     
     def _get_time_of_day(self, hour: int) -> str:

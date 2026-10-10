@@ -259,11 +259,10 @@ class TestIntegration:
         assert len(result["scheduledBlocks"]) > 0
         assert len(result["appliedTechniques"]) > 0
         
-        # Verify techniques are applied
+        # The plan is anchored to Week 1. (This used to assert Pomodoro / Time Blocking /
+        # Energy Management, which the generator listed but never actually applied.)
         techniques = result["appliedTechniques"]
-        assert any("Pomodoro" in t for t in techniques)
-        assert any("Time Blocking" in t for t in techniques)
-        assert any("Energy Management" in t for t in techniques)
+        assert any("Anchoring" in t for t in techniques)
 
 
 if __name__ == "__main__":
