@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Item, Prefs, WEEKDAYS_SHORT, fmtHour, fmtRange, isToday, layoutDay, toISODate } from '../lib/prep';
 import { EventCard } from './EventCard';
 import { cn } from './cn';
@@ -137,85 +136,95 @@ export function TimeGrid({
     [n]
   );
 
+  /* ---- gestures ------------------------------------------------------ */
+  // Exactly one pointer gesture can run at a time. Each registers a cleanup that removes its
+  // listeners and clears its preview; it runs on release, cancel, Escape, window blur, tab hide
+  // or unmount, so a preview can never be left stuck on the grid.
+  const gesture = useRef<(() => void) | null>(null);
+  const startGesture = (cleanup: () => void) => {
+    gesture.current?.();
+    gesture.current = cleanup;
+  };
+  const endGesture = (cleanup: () => void) => {
+    if (gesture.current === cleanup) gesture.current = null;
+    cleanup();
+  };
+  useEffect(() => {
+    const abort = () => {
+      const c = gesture.current;
+      gesture.current = null;
+      c?.();
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && abort();
+    const onVis = () => document.hidden && abort();
+    window.addEventListener('blur', abort);
+    window.addEventListener('keydown', onKey);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.removeEventListener('blur', abort);
+      window.removeEventListener('keydown', onKey);
+      document.removeEventListener('visibilitychange', onVis);
+      abort();
+    };
+  }, []);
+
+  /** Shared range-selection session used by mouse drag and touch long-press. */
+  const createSession = (col: number, colEl: HTMLElement, h0: number, opts: { touch: boolean; startY: number; t0: number }) => {
+    const unlock = opts.touch ? lockScroll() : undefined;
+    let h1 = h0;
+    let moved = opts.touch; // a touch session is already a deliberate range selection
+    setDraft({ col, a: h0, b: h0 });
+
+    const move = (ev: PointerEvent) => {
+      if (Math.abs(ev.clientY - opts.startY) > 5) moved = true;
+      h1 = snap(hourAt(ev.clientY, colEl));
+      if (moved) setDraft({ col, a: h0, b: h1 });
+    };
+    const cleanup = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', cancel);
+      unlock?.();
+      setDraft(null);
+    };
+    const up = (ev: PointerEvent) => {
+      endGesture(cleanup);
+      if (!moved && performance.now() - opts.t0 < 400) {
+        const start = clamp(Math.floor(hourAt(ev.clientY, colEl) * 2) / 2, 0, 23);
+        onCreate(dates[col], start, Math.min(24, start + 1));
+      } else {
+        const lo = Math.min(h0, h1);
+        onCreate(dates[col], lo, Math.min(24, Math.max(h0, h1, lo + 0.5)));
+      }
+    };
+    const cancel = () => endGesture(cleanup);
+    startGesture(cleanup);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', cancel);
+  };
+
   /* ---- create by click / drag on empty space ------------------------- */
   const onColumnPointerDown = (e: React.PointerEvent<HTMLDivElement>, col: number) => {
     if (e.button !== 0) return;
     if ((e.target as HTMLElement).closest('[data-event]')) return;
     const colEl = e.currentTarget;
+    const y0 = e.clientY;
 
     if (e.pointerType === 'touch') {
       // Tap opens a new task at that time; long-press then drag chooses a range; a swipe just scrolls.
-      const y0 = e.clientY;
       longPress(e).then((r) => {
         if (r === 'tap') {
           const start = clamp(Math.floor(hourAt(y0, colEl) * 2) / 2, 0, 23);
           onCreate(dates[col], start, Math.min(24, start + 1));
         } else if (r === 'hold') {
           navigator.vibrate?.(8);
-          const unlock = lockScroll();
-          const h0 = snap(hourAt(y0, colEl));
-          let h1 = h0;
-          setDraft({ col, a: h0, b: h0 });
-          const move = (ev: PointerEvent) => {
-            h1 = snap(hourAt(ev.clientY, colEl));
-            setDraft({ col, a: h0, b: h1 });
-          };
-          const stop = (commit: boolean) => {
-            window.removeEventListener('pointermove', move);
-            window.removeEventListener('pointerup', up);
-            window.removeEventListener('pointercancel', cancel);
-            unlock();
-            setDraft(null);
-            if (commit) {
-              const a = Math.min(h0, h1);
-              onCreate(dates[col], a, Math.min(24, Math.max(h0, h1, a + 0.5)));
-            }
-          };
-          const up = () => stop(true);
-          const cancel = () => stop(false);
-          window.addEventListener('pointermove', move);
-          window.addEventListener('pointerup', up);
-          window.addEventListener('pointercancel', cancel);
+          createSession(col, colEl, snap(hourAt(y0, colEl)), { touch: true, startY: y0, t0: 0 });
         }
       });
       return;
     }
-
-    colEl.setPointerCapture(e.pointerId);
-    const startY = e.clientY;
-    const t0 = performance.now();
-    const h0 = snap(hourAt(e.clientY, colEl));
-    let moved = false;
-    setDraft({ col, a: h0, b: h0 });
-
-    const move = (ev: PointerEvent) => {
-      if (Math.abs(ev.clientY - startY) > 5) moved = true;
-      if (moved) setDraft({ col, a: h0, b: snap(hourAt(ev.clientY, colEl)) });
-    };
-    const up = (ev: PointerEvent) => {
-      colEl.removeEventListener('pointermove', move);
-      colEl.removeEventListener('pointerup', up);
-      colEl.removeEventListener('pointercancel', cancel);
-      const h1 = snap(hourAt(ev.clientY, colEl));
-      setDraft(null);
-      if (!moved && performance.now() - t0 < 400) {
-        const start = clamp(Math.floor(hourAt(ev.clientY, colEl) * 2) / 2, 0, 23);
-        onCreate(dates[col], start, Math.min(24, start + 1));
-      } else {
-        const a = Math.min(h0, h1);
-        const b = Math.max(h0, h1, a + 0.5);
-        onCreate(dates[col], a, Math.min(24, b));
-      }
-    };
-    const cancel = () => {
-      colEl.removeEventListener('pointermove', move);
-      colEl.removeEventListener('pointerup', up);
-      colEl.removeEventListener('pointercancel', cancel);
-      setDraft(null);
-    };
-    colEl.addEventListener('pointermove', move);
-    colEl.addEventListener('pointerup', up);
-    colEl.addEventListener('pointercancel', cancel);
+    createSession(col, colEl, snap(hourAt(y0, colEl)), { touch: false, startY: y0, t0: performance.now() });
   };
 
   /* ---- move / resize an event ---------------------------------------- */
@@ -229,15 +238,16 @@ export function TimeGrid({
       longPress(e).then((r) => {
         if (r !== 'hold') return;
         navigator.vibrate?.(8);
-        dragSession(item, col, mode, x, y, lockScroll());
+        dragSession(item, col, mode, x, y, true);
       });
       return;
     }
-    dragSession(item, col, mode, x, y);
+    dragSession(item, col, mode, x, y, false);
   };
 
-  const dragSession = (item: Item, col: number, mode: 'move' | 'resize', startX: number, startY: number, unlock?: () => void) => {
-    // Listen on window: a move across days re-parents the card, which would drop element-level capture.
+  const dragSession = (item: Item, col: number, mode: 'move' | 'resize', startX: number, startY: number, touch: boolean) => {
+    // Window listeners: a move across days re-parents the card, which would drop element-level capture.
+    const unlock = touch ? lockScroll() : undefined;
     const base: Drag = {
       id: item.id,
       mode,
@@ -266,13 +276,16 @@ export function TimeGrid({
       }
       setDrag(cur);
     };
-    const finish = (commit: boolean) => {
+    const cleanup = () => {
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', cancel);
       unlock?.();
       setDrag(null);
-      if (commit && cur.moved) {
+    };
+    const up = () => {
+      endGesture(cleanup);
+      if (cur.moved) {
         suppressClick.current = true;
         setTimeout(() => (suppressClick.current = false), 0);
         const patch: Partial<Item> = { startHour: cur.start, endHour: cur.end };
@@ -280,8 +293,8 @@ export function TimeGrid({
         onChange(item.id, patch);
       }
     };
-    const up = () => finish(true);
-    const cancel = () => finish(false);
+    const cancel = () => endGesture(cleanup);
+    startGesture(cleanup);
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
     window.addEventListener('pointercancel', cancel);
@@ -452,23 +465,18 @@ export function TimeGrid({
                     );
                   })}
 
-                  {/* drag-to-create ghost */}
-                  <AnimatePresence>
-                    {draft && draft.col === col && Math.abs(draft.b - draft.a) >= 0.25 && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.1 }}
-                        className="pointer-events-none absolute inset-x-0.5 z-20 rounded-md border border-accent/60 bg-accent/12 px-2 py-1"
-                        style={{ top: Math.min(draft.a, draft.b) * HOUR_PX + 1, height: Math.abs(draft.b - draft.a) * HOUR_PX - 2 }}
-                      >
-                        <div className="tabular font-mono text-[10.5px] font-medium text-accent">
-                          {fmtRange(Math.min(draft.a, draft.b), Math.max(draft.a, draft.b))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {/* drag-to-create ghost: plain element, no exit animation, so it can never linger */}
+                  {draft && draft.col === col && Math.abs(draft.b - draft.a) >= 0.25 && (
+                    <div
+                      data-draft
+                      className="pointer-events-none absolute inset-x-0.5 z-20 rounded-md border border-accent/60 bg-accent/12 px-2 py-1"
+                      style={{ top: Math.min(draft.a, draft.b) * HOUR_PX + 1, height: Math.abs(draft.b - draft.a) * HOUR_PX - 2 }}
+                    >
+                      <div className="tabular font-mono text-[10.5px] font-medium text-accent">
+                        {fmtRange(Math.min(draft.a, draft.b), Math.max(draft.a, draft.b))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* now line */}
                   {today && nowHour !== null && (
