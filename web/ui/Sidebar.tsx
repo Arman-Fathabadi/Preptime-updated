@@ -32,6 +32,7 @@ export function Sidebar({
   onSignOut,
   accountEmail,
   syncStatus,
+  canSignIn,
   weatherUnit,
   focusItem,
   focusAuto,
@@ -55,6 +56,8 @@ export function Sidebar({
   onSignOut: () => void;
   accountEmail?: string | null;
   syncStatus?: 'off' | 'syncing' | 'saved' | 'offline';
+  /** Accounts are available and this is a guest: offer a way to sign in. */
+  canSignIn?: boolean;
   weatherUnit: 'celsius' | 'fahrenheit';
   focusItem: Item | null;
   focusAuto: boolean;
@@ -165,6 +168,11 @@ export function Sidebar({
         <span className="grid size-8 shrink-0 place-items-center rounded-full bg-subtle text-[12px] font-semibold uppercase">{(username ?? '?').slice(0, 1)}</span>
         <div className="min-w-0 flex-1">
           <div className="truncate text-[13px] font-medium">{username ?? 'Guest'}</div>
+          {canSignIn && (
+            <a href="/login" className="text-[11px] text-muted underline-offset-2 transition hover:text-fg hover:underline">
+              Sign in to sync
+            </a>
+          )}
           {syncStatus && syncStatus !== 'off' && (
             <div className="flex items-center gap-1.5 text-[11px] text-muted" title={accountEmail ?? undefined} role="status">
               <span className={cn('size-1.5 rounded-full', syncStatus === 'saved' ? 'bg-emerald-500' : syncStatus === 'syncing' ? 'animate-pulse bg-amber-500' : 'bg-red-500')} />

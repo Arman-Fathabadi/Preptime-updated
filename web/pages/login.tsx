@@ -40,7 +40,8 @@ export default function Login() {
 
     // Match the saved theme (the app sets it before first paint via _document).
     useEffect(() => {
-        if (localStorage.getItem('preptime-username')) router.replace('/');
+        // Guest-only deployments skip this page once you have a name. With accounts on, stay: a guest may want to sign in.
+        if (AUTH_PROVIDERS.length === 0 && localStorage.getItem('preptime-username')) router.replace('/');
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

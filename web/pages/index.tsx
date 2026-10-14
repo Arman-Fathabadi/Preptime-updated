@@ -34,7 +34,7 @@ import { EmptyState } from '../ui/EmptyState';
 import { YearView } from '../ui/YearView';
 import { SettingsDialog } from '../ui/SettingsDialog';
 import { SyncChoice } from '../ui/SyncChoice';
-import { useAccount } from '../ui/useAccount';
+import { ACCOUNTS_ENABLED, useAccount } from '../ui/useAccount';
 import { Segmented } from '../ui/Segmented';
 import { Kbd } from '../ui/Kbd';
 import { useMediaQuery, useNow, useStoredState } from '../ui/hooks';
@@ -342,6 +342,7 @@ export default function Home() {
       onSignOut={signOut}
       accountEmail={account.user?.email ?? null}
       syncStatus={account.status}
+      canSignIn={ACCOUNTS_ENABLED && !account.user && !account.pending}
       weatherUnit={store.prefs.weatherUnit}
       focusItem={focusItem}
       focusAuto={!picked && !!runningNow}
