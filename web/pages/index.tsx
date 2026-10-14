@@ -35,6 +35,7 @@ import { YearView } from '../ui/YearView';
 import { SettingsDialog } from '../ui/SettingsDialog';
 import { SyncChoice } from '../ui/SyncChoice';
 import { ACCOUNTS_ENABLED, useAccount } from '../ui/useAccount';
+import { useGoogleCalendar } from '../ui/useGoogleCalendar';
 import { Segmented } from '../ui/Segmented';
 import { Kbd } from '../ui/Kbd';
 import { useMediaQuery, useNow, useStoredState } from '../ui/hooks';
@@ -54,6 +55,7 @@ export default function Home() {
   const router = useRouter();
   const store = usePrepStore();
   const account = useAccount(store);
+  const gcal = useGoogleCalendar(store, account);
   const now = useNow();
   const narrow = useMediaQuery('(max-width: 767px)');
   const wide = useMediaQuery('(min-width: 1024px)');
@@ -541,6 +543,7 @@ export default function Home() {
       <SyncChoice open={!!account.choice} localCount={store.items.length} cloudCount={account.choice?.remote.items.length ?? 0} onResolve={account.resolve} />
 
       <SettingsDialog
+        calendar={{ available: gcal.available, state: gcal.state, lastSync: gcal.lastSync, count: gcal.count, onConnect: gcal.connect, onSync: gcal.sync, onDisconnect: gcal.disconnect }}
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         prefs={store.prefs}

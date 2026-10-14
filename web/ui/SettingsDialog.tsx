@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { CalendarArrowUp, Download, FileJson, FileSpreadsheet, Monitor, Moon, Sun, Upload, Wand2, X } from 'lucide-react';
+import { CalendarArrowUp, CalendarSync, Download, FileJson, FileSpreadsheet, Loader2, Monitor, Moon, Sun, Upload, Wand2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Item, Prefs, backupJSON, isPlanned, parseBackup, tasksCSV, tasksICS } from '../lib/prep';
 import { Segmented } from './Segmented';
 import { Theme } from './CommandPalette';
 import { useRestoreFocus } from './hooks';
+import type { CalendarState } from './useGoogleCalendar';
 import { cn } from './cn';
 
 function download(name: string, mime: string, text: string) {
@@ -35,6 +36,21 @@ function Row({ title, hint, children }: { title: string; hint?: string; children
   );
 }
 
+export type CalendarSettings = {
+  available: boolean;
+  state: CalendarState;
+  lastSync: number | null;
+  count: number;
+  onConnect: () => void;
+  onSync: () => void;
+  onDisconnect: () => void;
+};
+
+const ago = (t: number) => {
+  const m = Math.round((Date.now() - t) / 60000);
+  return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago`;
+};
+
 const selectCls = 'h-8 rounded-lg bg-subtle px-2.5 text-[13px] tabular outline-none transition focus:ring-2 focus:ring-accent/60';
 
 export function SettingsDialog({
@@ -46,6 +62,7 @@ export function SettingsDialog({
   onTheme,
   items,
   onReplaceAll,
+  calendar,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -55,6 +72,7 @@ export function SettingsDialog({
   onTheme: (t: Theme) => void;
   items: Item[];
   onReplaceAll: (next: Item[]) => void;
+  calendar?: CalendarSettings;
 }) {
   useRestoreFocus(open);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -153,6 +171,49 @@ export function SettingsDialog({
                 />
               </Row>
             </div>
+
+            {calendar?.available && (
+              <>
+                <h3 className="pt-6 text-[11px] font-semibold uppercase tracking-wider text-faint">Calendars</h3>
+                <div className="divide-y divide-line">
+                  <Row
+                    title="Google Calendar"
+                    hint={
+                      calendar.state === 'disconnected'
+                        ? 'Read-only. Your events appear here and the planner works around them. Nothing is ever written to Google.'
+                        : calendar.state === 'reconnect'
+                          ? 'Google needs you to approve access again.'
+                          : calendar.state === 'error'
+                            ? 'Could not reach Google Calendar. Try again in a moment.'
+                            : calendar.lastSync
+                              ? `${calendar.count} events in the next eight weeks. Synced ${ago(calendar.lastSync)}.`
+                              : 'Connected. Events refresh when you open PrepTime.'
+                    }
+                  >
+                    {calendar.state === 'checking' || calendar.state === 'unavailable' ? (
+                      <Loader2 className="size-4 animate-spin text-muted" aria-label="Checking" />
+                    ) : calendar.state === 'disconnected' || calendar.state === 'reconnect' ? (
+                      <button onClick={calendar.onConnect} className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-ink px-3 text-[13px] font-medium text-ink-fg transition hover:opacity-90">
+                        <CalendarSync className="size-3.5" /> {calendar.state === 'reconnect' ? 'Reconnect' : 'Connect'}
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={calendar.onSync}
+                          disabled={calendar.state === 'syncing'}
+                          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-3 text-[13px] font-medium transition enabled:hover:bg-subtle disabled:opacity-60"
+                        >
+                          {calendar.state === 'syncing' ? <Loader2 className="size-3.5 animate-spin" /> : <CalendarSync className="size-3.5 text-muted" />} Sync now
+                        </button>
+                        <button onClick={calendar.onDisconnect} className="h-8 rounded-lg px-2.5 text-[13px] text-muted transition hover:bg-subtle hover:text-fg">
+                          Disconnect
+                        </button>
+                      </div>
+                    )}
+                  </Row>
+                </div>
+              </>
+            )}
 
             <h3 className="pt-6 text-[11px] font-semibold uppercase tracking-wider text-faint">Planning</h3>
             <div className="divide-y divide-line">

@@ -500,8 +500,24 @@ export function buildGenerationRequest(items: Item[], viewedMonday: Date, prefs:
   // Learn from the tasks the user built, never from earlier output of the planner (a plan of a plan drifts).
   const week = items.filter((t) => {
     const d = fromISODate(t.date);
-    return d >= viewedMonday && d < weekEnd && !isPlanned(t);
+    return d >= viewedMonday && d < weekEnd && !isPlanned(t) && !t.id.startsWith('gcal_');
   });
+
+  // Events imported from Google Calendar are fixed: the planner works around them in the three weeks it fills.
+  const planStart = addDays(viewedMonday, 7);
+  const planEnd = addDays(viewedMonday, 28);
+  const existingEvents = items
+    .filter((t) => {
+      const d = fromISODate(t.date);
+      return t.id.startsWith('gcal_') && d >= planStart && d < planEnd;
+    })
+    .map((t) => ({
+      id: t.id,
+      title: t.title,
+      start: toLocalISO(new Date(`${t.date}T${hourToHhmm(t.startHour)}:00`)),
+      end: toLocalISO(new Date(`${t.date}T${hourToHhmm(Math.min(t.endHour, 23.99))}:00`)),
+      kind: 'fixed' as const,
+    }));
 
   const week1Blocks = week.map((t) => ({
     id: t.id,
@@ -530,7 +546,7 @@ export function buildGenerationRequest(items: Item[], viewedMonday: Date, prefs:
   return {
     week1Blocks,
     week1Tasks,
-    existingEvents: [],
+    existingEvents,
     preferences: {
       dayStartHour: prefs.dayStartHour,
       dayEndHour: prefs.dayEndHour,

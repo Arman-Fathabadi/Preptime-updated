@@ -154,3 +154,40 @@ describe('SyncChoice', () => {
     expect(onResolve).toHaveBeenCalledWith('local');
   });
 });
+
+describe('Settings: Google Calendar', () => {
+  const base = { open: true, onOpenChange: () => {}, prefs: { dayStartHour: 7, dayEndHour: 23, slotStepMin: 15, bufferMin: 5, maxHeavyPerDay: 3, weatherUnit: 'celsius' as const }, onPrefs: () => {}, theme: 'light' as const, onTheme: () => {}, items: [], onReplaceAll: () => {} };
+  const cal = (over: object) => ({ available: true, state: 'disconnected' as const, lastSync: null, count: 0, onConnect: vi.fn(), onSync: vi.fn(), onDisconnect: vi.fn(), ...over });
+
+  it('is hidden when calendars are not available', async () => {
+    const { SettingsDialog } = await import('../../ui/SettingsDialog');
+    render(<SettingsDialog {...base} calendar={cal({ available: false })} />);
+    expect(screen.queryByText('Google Calendar')).toBeNull();
+  });
+
+  it('offers Connect when not connected', async () => {
+    const { SettingsDialog } = await import('../../ui/SettingsDialog');
+    const c = cal({});
+    render(<SettingsDialog {...base} calendar={c} />);
+    expect(screen.getByText(/Nothing is ever written to Google/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Connect/ }));
+    expect(c.onConnect).toHaveBeenCalled();
+  });
+
+  it('offers Sync now and Disconnect when connected, with the event count', async () => {
+    const { SettingsDialog } = await import('../../ui/SettingsDialog');
+    const c = cal({ state: 'idle', lastSync: Date.now(), count: 42 });
+    render(<SettingsDialog {...base} calendar={c} />);
+    expect(screen.getByText(/42 events in the next eight weeks/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Sync now/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Disconnect/ }));
+    expect(c.onSync).toHaveBeenCalled();
+    expect(c.onDisconnect).toHaveBeenCalled();
+  });
+
+  it('asks to reconnect when Google revoked access', async () => {
+    const { SettingsDialog } = await import('../../ui/SettingsDialog');
+    render(<SettingsDialog {...base} calendar={cal({ state: 'reconnect' })} />);
+    expect(screen.getByRole('button', { name: /Reconnect/ })).toBeTruthy();
+  });
+});

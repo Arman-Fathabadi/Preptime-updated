@@ -41,6 +41,17 @@ How sync works: one JSON document per account (`user_data`), saved ~1.5 s after 
 Saves carry a version number, so two devices can't silently overwrite each other. The first time an account meets a browser that already has
 tasks, you choose to keep both, the account's plan, or the browser's plan.
 
+### Google sign-in and Google Calendar import (optional)
+
+1. In [Google Cloud Console](https://console.cloud.google.com): create a project, then **APIs & Services > Library > Google Calendar API > Enable**.
+2. **OAuth consent screen**: user type *External*, add the scope `.../auth/calendar.readonly`, and while the app is in *Testing* add every Google account that will use it as a **test user** (up to 100).
+3. **Credentials > Create OAuth client ID > Web application**, with redirect URI `<BETTER_AUTH_URL>/api/auth/callback/google`.
+4. Set `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` and add `google` to `NEXT_PUBLIC_AUTH_PROVIDERS` (e.g. `google,github`), then redeploy.
+
+Signing in with Google needs only basic profile access. Calendar access is a separate, optional step in **Settings > Calendars**: it is read-only, events are imported for the last week and next eight weeks
+(refreshed when you open the app, or with *Sync now*), and the planner treats imported events in the weeks it fills as fixed. While the Google app is in *Testing* mode, Google expires the
+Calendar permission after 7 days and you reconnect from Settings. Publishing the app removes that, but Google reviews apps that request Calendar access before more than 100 people can use it.
+
 ## Project Structure
 
 ```
