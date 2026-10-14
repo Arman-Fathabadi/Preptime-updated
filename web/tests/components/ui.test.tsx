@@ -139,3 +139,18 @@ describe('MonthView and YearView', () => {
     expect(onPickDay).toHaveBeenCalledWith(new Date(2026, 0, 15));
   });
 });
+
+describe('SyncChoice', () => {
+  it('offers three ways out and reports the pick', async () => {
+    const { SyncChoice } = await import('../../ui/SyncChoice');
+    const onResolve = vi.fn();
+    render(<SyncChoice open localCount={1} cloudCount={2} onResolve={onResolve} />);
+    expect(screen.getByText(/1 task here \+ 2 tasks in your account/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Use my account/ }));
+    expect(onResolve).toHaveBeenCalledWith('cloud');
+    fireEvent.click(screen.getByRole('button', { name: /Keep both/ }));
+    expect(onResolve).toHaveBeenCalledWith('merge');
+    fireEvent.click(screen.getByRole('button', { name: /Use this browser/ }));
+    expect(onResolve).toHaveBeenCalledWith('local');
+  });
+});

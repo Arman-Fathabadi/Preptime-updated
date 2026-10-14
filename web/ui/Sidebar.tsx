@@ -30,6 +30,8 @@ export function Sidebar({
   onOpenItem,
   onToggleItem,
   onSignOut,
+  accountEmail,
+  syncStatus,
   weatherUnit,
   focusItem,
   focusAuto,
@@ -51,6 +53,8 @@ export function Sidebar({
   onOpenItem: (it: Item) => void;
   onToggleItem: (id: string) => void;
   onSignOut: () => void;
+  accountEmail?: string | null;
+  syncStatus?: 'off' | 'syncing' | 'saved' | 'offline';
   weatherUnit: 'celsius' | 'fahrenheit';
   focusItem: Item | null;
   focusAuto: boolean;
@@ -159,7 +163,15 @@ export function Sidebar({
       {/* Footer */}
       <div className="flex items-center gap-2 border-t border-line p-3">
         <span className="grid size-8 shrink-0 place-items-center rounded-full bg-subtle text-[12px] font-semibold uppercase">{(username ?? '?').slice(0, 1)}</span>
-        <div className="min-w-0 flex-1 truncate text-[13px] font-medium">{username ?? 'Guest'}</div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[13px] font-medium">{username ?? 'Guest'}</div>
+          {syncStatus && syncStatus !== 'off' && (
+            <div className="flex items-center gap-1.5 text-[11px] text-muted" title={accountEmail ?? undefined} role="status">
+              <span className={cn('size-1.5 rounded-full', syncStatus === 'saved' ? 'bg-emerald-500' : syncStatus === 'syncing' ? 'animate-pulse bg-amber-500' : 'bg-red-500')} />
+              {syncStatus === 'saved' ? 'Synced' : syncStatus === 'syncing' ? 'Saving…' : 'Offline, will retry'}
+            </div>
+          )}
+        </div>
         <Segmented<Theme>
           id="theme"
           size="sm"
@@ -172,7 +184,7 @@ export function Sidebar({
             { value: 'system', label: <Monitor className="size-3.5" />, title: 'Match system' },
           ]}
         />
-        <button onClick={onSignOut} aria-label="Switch user" title="Switch user" className="grid size-8 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-fg">
+        <button onClick={onSignOut} aria-label={accountEmail ? 'Sign out' : 'Switch user'} title={accountEmail ? 'Sign out' : 'Switch user'} className="grid size-8 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-subtle hover:text-fg">
           <LogOut className="size-4" />
         </button>
       </div>

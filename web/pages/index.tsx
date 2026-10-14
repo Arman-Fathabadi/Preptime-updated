@@ -33,6 +33,8 @@ import { MonthView } from '../ui/MonthView';
 import { EmptyState } from '../ui/EmptyState';
 import { YearView } from '../ui/YearView';
 import { SettingsDialog } from '../ui/SettingsDialog';
+import { SyncChoice } from '../ui/SyncChoice';
+import { useAccount } from '../ui/useAccount';
 import { Segmented } from '../ui/Segmented';
 import { Kbd } from '../ui/Kbd';
 import { useMediaQuery, useNow, useStoredState } from '../ui/hooks';
@@ -51,6 +53,7 @@ const longDay = (d: Date) => d.toLocaleString('en', { weekday: 'long', month: 'l
 export default function Home() {
   const router = useRouter();
   const store = usePrepStore();
+  const account = useAccount(store);
   const now = useNow();
   const narrow = useMediaQuery('(max-width: 767px)');
   const wide = useMediaQuery('(min-width: 1024px)');
@@ -73,6 +76,8 @@ export default function Home() {
   useEffect(() => {
     if (!store.loaded) return;
     if (!store.username) {
+      // Signed-in accounts get their name from the session a moment later; don't bounce them to /login.
+      if (account.pending || account.user) return;
       router.replace('/login');
       return;
     }
@@ -81,7 +86,7 @@ export default function Home() {
     const id = setInterval(() => fetch('/api/health').catch(() => {}), 240_000);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store.loaded, store.username]);
+  }, [store.loaded, store.username, account.pending, account.user?.id]);
 
   // Forget a picked task that no longer exists.
   useEffect(() => {
@@ -232,7 +237,11 @@ export default function Home() {
     toast.success('Sample week added', { description: `${made.length} tasks. Try "Plan the next 3 weeks" next.` });
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    if (account.user) {
+      if (await account.signOutAccount()) router.push('/login');
+      return;
+    }
     localStorage.removeItem('preptime-username');
     router.push('/login');
   };
@@ -331,6 +340,8 @@ export default function Home() {
       onOpenItem={openEdit}
       onToggleItem={store.toggle}
       onSignOut={signOut}
+      accountEmail={account.user?.email ?? null}
+      syncStatus={account.status}
       weatherUnit={store.prefs.weatherUnit}
       focusItem={focusItem}
       focusAuto={!picked && !!runningNow}
@@ -525,6 +536,8 @@ export default function Home() {
           toast('Focus timer set', { description: it?.title });
         }}
       />
+
+      <SyncChoice open={!!account.choice} localCount={store.items.length} cloudCount={account.choice?.remote.items.length ?? 0} onResolve={account.resolve} />
 
       <SettingsDialog
         open={settingsOpen}

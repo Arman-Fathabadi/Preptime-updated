@@ -348,6 +348,15 @@ function readPrefs(): Prefs {
   return DEFAULT_PREFS;
 }
 
+/** Wipes this browser's copy of the plan (used after signing out of a synced account). */
+export function clearLocalPlan() {
+  try {
+    [TASKS_KEY, PREFS_KEY, USER_KEY, ACTIVE_KEY, 'preptime-guest'].forEach((k) => localStorage.removeItem(k));
+  } catch {
+    /* ignore */
+  }
+}
+
 export function usePrepStore() {
   const [items, setItems] = useState<Item[]>([]);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
@@ -420,6 +429,15 @@ export function usePrepStore() {
   const remove = useCallback((id: string) => setItems((prev) => prev.filter((t) => t.id !== id)), []);
   const toggle = useCallback((id: string) => setItems((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))), []);
   const replaceAll = useCallback((next: Item[]) => setItems(next), []);
+  const setUsernamePersist = useCallback((name: string | null) => {
+    setUsername(name);
+    try {
+      if (name) localStorage.setItem(USER_KEY, name);
+      else localStorage.removeItem(USER_KEY);
+    } catch {
+      /* ignore */
+    }
+  }, []);
   const setActiveId = useCallback((id: string | null) => {
     setActiveIdState(id);
     try {
@@ -461,7 +479,7 @@ export function usePrepStore() {
     return m;
   }, [items]);
 
-  return { items, byDate, prefs, username, loaded, activeId, setActiveId, add, update, remove, toggle, replaceAll, addSampleWeek, setPrefs, updatePrefs };
+  return { items, byDate, prefs, username, setUsername: setUsernamePersist, loaded, activeId, setActiveId, add, update, remove, toggle, replaceAll, addSampleWeek, setPrefs, updatePrefs };
 }
 
 /* ------------------------------------------------------------------ */

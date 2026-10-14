@@ -22,6 +22,25 @@ An intelligent task scheduling system that learns from your Week 1 schedule and 
 - **Explainable AI**: Clear explanations for every scheduling decision
 - **Comprehensive Metrics**: Analytics on productivity and time utilization
 
+## Accounts and sync (optional)
+
+PrepTime works with no account: the plan lives in the browser. Add accounts and the same plan follows you across devices.
+Everything below is free-tier: [Better Auth](https://www.better-auth.com) (open source), a free [Neon](https://neon.tech) Postgres database, and Google / GitHub OAuth.
+
+1. Create a Neon project and copy its connection string into `DATABASE_URL`.
+2. Set `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) and `BETTER_AUTH_URL` (the site's public URL).
+3. Create OAuth apps and fill in `GOOGLE_CLIENT_ID/SECRET` and/or `GITHUB_CLIENT_ID/SECRET`
+   (callback URL: `<BETTER_AUTH_URL>/api/auth/callback/google` or `.../github`).
+4. Set `NEXT_PUBLIC_AUTH_PROVIDERS=google,github` (the login page shows a button per provider listed).
+5. Create the tables once: `cd web && node --env-file=.env.local scripts/migrate.mjs`.
+
+See `web/.env.example`. Leave these unset and the app stays in guest mode. Each Google/GitHub OAuth app only accepts the callback URLs you
+register, so test sign-in on the production URL (or add the preview URL as a callback).
+
+How sync works: one JSON document per account (`user_data`), saved ~1.5 s after each change, pulled when you sign in and when the tab regains focus.
+Saves carry a version number, so two devices can't silently overwrite each other. The first time an account meets a browser that already has
+tasks, you choose to keep both, the account's plan, or the browser's plan.
+
 ## Project Structure
 
 ```
